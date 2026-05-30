@@ -28,6 +28,10 @@ export interface Campaign {
   shortTermFontWeight?: string;
   shortTermIsItalic?: boolean;
   shortTermBgColor?: string;
+  overrideTotalSpent?: number;
+  useOverrideTotalSpent?: boolean;
+  overrideTotalForecast?: number;
+  useOverrideTotalForecast?: boolean;
 }
 
 export interface TransparencyItem {

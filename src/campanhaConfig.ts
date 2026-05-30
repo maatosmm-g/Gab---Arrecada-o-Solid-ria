@@ -1,4 +1,4 @@
-import { Campaign } from './types';
+import { Campaign, TransparencyItem } from './types';
 
 /**
  * Interface que representa a estrutura centralizada de dados e cálculos da campanha.
@@ -13,13 +13,19 @@ export interface CampaignDataSummary {
   valorArrecadadoFormatado: string;
   metaGlobalFormatada: string;
   valorRestanteFormatado: string;
+  
+  // Totais de prestação de contas na aba Transparência
+  totalInvestidoTerapias: number;
+  totalInvestidoTerapiasFormatado: string;
+  totalCustosPlanejados: number;
+  totalCustosPlanejadosFormatado: string;
 }
 
 /**
  * Cria a estrutura baseada no objeto central "dadosDaCampanha" contendo
  * todas as propriedades estáticas e calculadas referentes aos valores da campanha.
  */
-export function obterDadosDaCampanha(campaign: Campaign): CampaignDataSummary {
+export function obterDadosDaCampanha(campaign: Campaign, transparencyItems?: TransparencyItem[]): CampaignDataSummary {
   const metaGlobal = campaign.targetAmount;
   const valorArrecadado = campaign.raisedAmount;
   const apoiadores = campaign.donorCount;
@@ -37,6 +43,26 @@ export function obterDadosDaCampanha(campaign: Campaign): CampaignDataSummary {
   // Valor restante para atingir a meta
   const valorRestante = Math.max(0, metaGlobal - valorArrecadado);
 
+  // Calcular Investido em Terapias (Pago)
+  let totalInvestidoTerapias = 0;
+  if (campaign.useOverrideTotalSpent && campaign.overrideTotalSpent !== undefined && campaign.overrideTotalSpent >= 0) {
+    totalInvestidoTerapias = campaign.overrideTotalSpent;
+  } else if (transparencyItems) {
+    totalInvestidoTerapias = transparencyItems
+      .filter((it) => it.status === 'pago')
+      .reduce((sum, it) => sum + it.amount, 0);
+  }
+
+  // Calcular Custos Futuros Planejados
+  let totalCustosPlanejados = 0;
+  if (campaign.useOverrideTotalForecast && campaign.overrideTotalForecast !== undefined && campaign.overrideTotalForecast >= 0) {
+    totalCustosPlanejados = campaign.overrideTotalForecast;
+  } else if (transparencyItems) {
+    totalCustosPlanejados = transparencyItems
+      .filter((it) => it.status !== 'pago')
+      .reduce((sum, it) => sum + it.amount, 0);
+  }
+
   // Formatações decimais em português (pt-BR)
   const valorArrecadadoFormatado = valorArrecadado.toLocaleString('pt-BR', { 
     minimumFractionDigits: 2, 
@@ -44,6 +70,15 @@ export function obterDadosDaCampanha(campaign: Campaign): CampaignDataSummary {
   });
   const metaGlobalFormatada = metaGlobal.toLocaleString('pt-BR');
   const valorRestanteFormatado = valorRestante.toLocaleString('pt-BR');
+  
+  const totalInvestidoTerapiasFormatado = totalInvestidoTerapias.toLocaleString('pt-BR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+  const totalCustosPlanejadosFormatado = totalCustosPlanejados.toLocaleString('pt-BR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
 
   return {
     metaGlobal,
@@ -54,7 +89,11 @@ export function obterDadosDaCampanha(campaign: Campaign): CampaignDataSummary {
     valorRestante,
     valorArrecadadoFormatado,
     metaGlobalFormatada,
-    valorRestanteFormatado
+    valorRestanteFormatado,
+    totalInvestidoTerapias,
+    totalInvestidoTerapiasFormatado,
+    totalCustosPlanejados,
+    totalCustosPlanejadosFormatado
   };
 }
 

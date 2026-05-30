@@ -61,7 +61,7 @@ export default function App() {
   const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   // Centralização de dados e engrenagens de cálculo matemático da campanha
-  const dadosDaCampanha = obterDadosDaCampanha(campaign);
+  const dadosDaCampanha = obterDadosDaCampanha(campaign, transparency);
 
   // Helper para converter link cru do YouTube ou Vimeo em Embed URL
   const getEmbedUrl = (rawUrl: string): string => {
@@ -1029,6 +1029,7 @@ export default function App() {
                 onAddExpense={handleAddExpense} 
                 onUpdateExpense={handleUpdateExpense} 
                 onDeleteExpense={handleDeleteExpense} 
+                onUpdateCampaign={handleUpdateCampaign}
               />
             )}
 

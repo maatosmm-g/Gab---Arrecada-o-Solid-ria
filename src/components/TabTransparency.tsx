@@ -15,6 +15,7 @@ interface TabTransparencyProps {
   onAddExpense: (item: TransparencyItem) => void;
   onUpdateExpense: (item: TransparencyItem) => void;
   onDeleteExpense: (id: string) => void;
+  onUpdateCampaign?: (updated: Campaign) => void;
 }
 
 const getCategoryIcon = (category: string) => {
@@ -43,6 +44,7 @@ export default function TabTransparency({
   onAddExpense,
   onUpdateExpense,
   onDeleteExpense,
+  onUpdateCampaign,
 }: TabTransparencyProps) {
   // Add Expense form state
   const [isAdding, setIsAdding] = useState(false);
@@ -63,7 +65,17 @@ export default function TabTransparency({
   const [editDate, setEditDate] = useState('');
   const [editNotes, setEditNotes] = useState('');
 
-  const dadosDaCampanha = obterDadosDaCampanha(campaign);
+  // Painel de Edição dos 3 Cards Principais
+  const [isEditingStats, setIsEditingStats] = useState(false);
+  const [editTargetAmount, setEditTargetAmount] = useState(campaign.targetAmount);
+  const [editRaisedAmount, setEditRaisedAmount] = useState(campaign.raisedAmount);
+  const [editDonorCount, setEditDonorCount] = useState(campaign.donorCount);
+  const [editUseOverrideSpent, setEditUseOverrideSpent] = useState(campaign.useOverrideTotalSpent || false);
+  const [editOverrideSpent, setEditOverrideSpent] = useState(campaign.overrideTotalSpent || 0);
+  const [editUseOverrideForecast, setEditUseOverrideForecast] = useState(campaign.useOverrideTotalForecast || false);
+  const [editOverrideForecast, setEditOverrideForecast] = useState(campaign.overrideTotalForecast || 0);
+
+  const dadosDaCampanha = obterDadosDaCampanha(campaign, transparencyItems);
   const percentRaised = dadosDaCampanha.progressoPorcentagemAjustada;
 
   const startEditRow = (item: TransparencyItem) => {
@@ -93,13 +105,32 @@ export default function TabTransparency({
     setEditingId(null);
   };
 
-  const totalSpent = transparencyItems
-    .filter((it) => it.status === 'pago')
-    .reduce((sum, it) => sum + it.amount, 0);
+  const handleStartEditingStats = () => {
+    setEditTargetAmount(campaign.targetAmount);
+    setEditRaisedAmount(campaign.raisedAmount);
+    setEditDonorCount(campaign.donorCount);
+    setEditUseOverrideSpent(campaign.useOverrideTotalSpent || false);
+    setEditOverrideSpent(campaign.overrideTotalSpent || 0);
+    setEditUseOverrideForecast(campaign.useOverrideTotalForecast || false);
+    setEditOverrideForecast(campaign.overrideTotalForecast || 0);
+    setIsEditingStats(true);
+  };
 
-  const totalForecast = transparencyItems
-    .filter((it) => it.status !== 'pago')
-    .reduce((sum, it) => sum + it.amount, 0);
+  const handleSaveStats = () => {
+    if (onUpdateCampaign) {
+      onUpdateCampaign({
+        ...campaign,
+        targetAmount: Number(editTargetAmount),
+        raisedAmount: Number(editRaisedAmount),
+        donorCount: Number(editDonorCount),
+        useOverrideTotalSpent: editUseOverrideSpent,
+        overrideTotalSpent: Number(editOverrideSpent),
+        useOverrideTotalForecast: editUseOverrideForecast,
+        overrideTotalForecast: Number(editOverrideForecast),
+      });
+    }
+    setIsEditingStats(false);
+  };
 
   const getStatusBadge = (status: TransparencyItem['status']) => {
     switch (status) {
@@ -114,6 +145,153 @@ export default function TabTransparency({
 
   return (
     <div className="space-y-6" id="transparency-tab-content">
+      {/* BOTÃO EXCLUSIVO DE REGULAÇÃO DOS CARDS FINANCEIROS (VISÍVEL APENAS PARA ADMINISTRADOR) */}
+      {isAdmin && (
+        <div className="flex justify-end" id="admin-meta-adjustment-row">
+          <button
+            type="button"
+            onClick={isEditingStats ? () => setIsEditingStats(false) : handleStartEditingStats}
+            className="h-8 px-4 bg-[#F27D26] hover:bg-[#d66518] text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer focus:outline-none shadow-xs"
+          >
+            <Edit2 className="w-3.5 h-3.5" />
+            {isEditingStats ? 'Ver Resultados' : 'Painel de Ajuste dos 3 Cards'}
+          </button>
+        </div>
+      )}
+
+      {/* PAINEL DE CONFIGURAÇÃO DIRETA DOS CARDS FINANCEIROS E METAS */}
+      {isAdmin && isEditingStats && (
+        <div className="bg-natural-light border border-natural-border p-5 rounded-2xl space-y-4 animate-fadeIn" id="panel-edit-financial-cards">
+          <div className="flex items-center justify-between border-b border-natural-border pb-2">
+            <h4 className="font-serif italic font-bold text-natural-dark text-sm flex items-center gap-1.5">
+              <Layers className="w-4 h-4 text-natural-primary" />
+              Painel de Ajuste: Configuração Direta dos Cards
+            </h4>
+            <span className="text-[10px] text-[#F27D26] font-mono font-bold uppercase">Modo Administrador</span>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {/* Card 1: Resumo Financeiro e Metas */}
+            <div className="bg-white p-4 rounded-xl border border-natural-border space-y-3 shadow-2xs">
+              <p className="text-[10px] uppercase font-mono font-bold tracking-wider text-[#F27D26]">1. Resumo Financeiro e Metas</p>
+              
+              <div className="space-y-2">
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-0.5">Meta Global (R$)</label>
+                  <input
+                    type="number"
+                    className="w-full h-8 px-2.5 bg-slate-50 border border-natural-border rounded-lg text-xs font-semibold outline-none focus:border-natural-primary"
+                    value={editTargetAmount}
+                    onChange={(e) => setEditTargetAmount(Number(e.target.value))}
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-0.5">Valor Arrecadado (R$)</label>
+                  <input
+                    type="number"
+                    className="w-full h-8 px-2.5 bg-slate-50 border border-natural-border rounded-lg text-xs font-semibold outline-none focus:border-natural-primary"
+                    value={editRaisedAmount}
+                    onChange={(e) => setEditRaisedAmount(Number(e.target.value))}
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-0.5">Apoiadores</label>
+                  <input
+                    type="number"
+                    className="w-full h-8 px-2.5 bg-slate-50 border border-natural-border rounded-lg text-xs font-semibold outline-none focus:border-natural-primary"
+                    value={editDonorCount}
+                    onChange={(e) => setEditDonorCount(Number(e.target.value))}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Card 2: Investido em Terapias */}
+            <div className="bg-white p-4 rounded-xl border border-natural-border space-y-3 shadow-2xs">
+              <p className="text-[10px] uppercase font-mono font-bold tracking-wider text-emerald-600">2. Investido em Terapias (Pago)</p>
+              
+              <div className="space-y-3">
+                <label className="flex items-center gap-2 cursor-pointer pt-1 bg-slate-50 border border-natural-border/60 p-2 rounded-lg text-xs font-semibold text-slate-650 select-none">
+                  <input
+                    type="checkbox"
+                    className="rounded text-emerald-600 focus:ring-emerald-500 w-4 h-4 cursor-pointer"
+                    checked={editUseOverrideSpent}
+                    onChange={(e) => setEditUseOverrideSpent(e.target.checked)}
+                  />
+                  Sobrescrever cálculo automático
+                </label>
+                
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-0.5">Valor Pago Fixo (R$)</label>
+                  <input
+                    type="number"
+                    disabled={!editUseOverrideSpent}
+                    className="w-full h-8 px-2.5 bg-slate-50 disabled:bg-slate-100 disabled:opacity-60 border border-natural-border rounded-lg text-xs font-semibold outline-none focus:border-natural-primary"
+                    value={editOverrideSpent}
+                    onChange={(e) => setEditOverrideSpent(Number(e.target.value))}
+                  />
+                  <p className="text-[9px] text-slate-400 mt-1 leading-normal italic">
+                    {editUseOverrideSpent 
+                      ? "Exibindo valor fixo digitado acima." 
+                      : "Valor calculado automaticamente a partir das despesas 'Pagas'."}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Card 3: Custos Futuros Planejados */}
+            <div className="bg-white p-4 rounded-xl border border-natural-border space-y-3 shadow-2xs">
+              <p className="text-[10px] uppercase font-mono font-bold tracking-wider text-blue-600">3. Custos Futuros Planejados</p>
+              
+              <div className="space-y-3">
+                <label className="flex items-center gap-2 cursor-pointer pt-1 bg-slate-50 border border-natural-border/60 p-2 rounded-lg text-xs font-semibold text-slate-650 select-none">
+                  <input
+                    type="checkbox"
+                    className="rounded text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer"
+                    checked={editUseOverrideForecast}
+                    onChange={(e) => setEditUseOverrideForecast(e.target.checked)}
+                  />
+                  Sobrescrever cálculo automático
+                </label>
+                
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-0.5">Valor Planejado Fixo (R$)</label>
+                  <input
+                    type="number"
+                    disabled={!editUseOverrideForecast}
+                    className="w-full h-8 px-2.5 bg-slate-50 disabled:bg-slate-100 disabled:opacity-60 border border-natural-border rounded-lg text-xs font-semibold outline-none focus:border-natural-primary"
+                    value={editOverrideForecast}
+                    onChange={(e) => setEditOverrideForecast(Number(e.target.value))}
+                  />
+                  <p className="text-[9px] text-slate-400 mt-1 leading-normal italic">
+                    {editUseOverrideForecast 
+                      ? "Exibindo valor fixo digitado acima." 
+                      : "Valor calculado de despesas previstas ou agendadas."}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-2 border-t border-natural-border pt-3">
+            <button
+              type="button"
+              onClick={() => setIsEditingStats(false)}
+              className="h-8 px-4 border border-natural-border rounded-xl text-xs font-semibold text-slate-600 bg-white hover:bg-slate-50 cursor-pointer"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={handleSaveStats}
+              className="h-8 px-4 bg-natural-primary hover:bg-natural-primary-dark rounded-xl text-xs font-bold text-white shadow-xs cursor-pointer flex items-center gap-1"
+            >
+              <Check className="w-3.5 h-3.5" /> Salvar Configurações
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Bloco de Progresso / Metas */}
       <div className="bg-natural-dark text-white rounded-2xl p-6 shadow-md grid grid-cols-1 md:grid-cols-4 gap-6 relative overflow-hidden">
         <div className="md:col-span-2 space-y-3 relative z-10">
@@ -147,7 +325,7 @@ export default function TabTransparency({
         <div className="bg-white/5 p-4 rounded-xl space-y-1 border border-white/10 relative z-10 flex flex-col justify-center">
           <span className="text-[10px] text-slate-300 uppercase font-bold">Investido em Terapias (Pago)</span>
           <p className="text-lg font-serif italic font-bold text-white">
-            R$ {totalSpent.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+            R$ {dadosDaCampanha.totalInvestidoTerapiasFormatado}
           </p>
           <span className="text-[10px] text-emerald-400 flex items-center gap-0.5 font-medium leading-none">
             <CheckCircle2 className="w-3 h-3 text-none fill-emerald-400 text-natural-dark" /> Transparência Máxima
@@ -157,7 +335,7 @@ export default function TabTransparency({
         <div className="bg-white/5 p-4 rounded-xl space-y-1 border border-white/10 relative z-10 flex flex-col justify-center">
           <span className="text-[10px] text-slate-300 uppercase font-bold">Custos Futuros Planejados</span>
           <p className="text-lg font-serif italic font-bold text-[#F27D26]">
-            R$ {totalForecast.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+            R$ {dadosDaCampanha.totalCustosPlanejadosFormatado}
           </p>
           <span className="text-[10px] text-yellow-400 flex items-center gap-0.5 font-medium leading-none">
             <AlertCircle className="w-3 h-3 text-none" /> Projeção de despesas
