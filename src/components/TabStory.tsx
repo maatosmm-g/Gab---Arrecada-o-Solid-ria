@@ -378,69 +378,71 @@ export default function TabStory({
               </button>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {mediaImages.length === 0 ? (
-                <div className="sm:col-span-2 border-2 border-dashed border-natural-border rounded-xl text-center py-8 text-xs text-slate-400 bg-white">
-                  Nenhuma imagem na galeria. Clique no botão de mais (+) acima para inserir.
-                </div>
-              ) : (
-                mediaImages.map((img, idx) => (
-                  <div key={img.id} className="bg-white border border-natural-border rounded-xl p-3 space-y-3 shadow-xs">
-                    <div className="flex justify-between items-center border-b border-slate-100 pb-1.5">
-                      <span className="text-[10px] font-bold text-natural-primary font-mono lowercase">Mídia ID: #{img.id.slice(-4)}</span>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveMediaImage(img.id)}
-                        className="p-1 px-2 text-rose-500 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer text-[10px] font-semibold flex items-center gap-0.5"
-                      >
-                        <Trash2 className="w-3 h-3" /> Excluir Mídia
-                      </button>
-                    </div>
-
-                    <ImageUploadPicker
-                      value={img.url}
-                      onChange={(val) => {
-                        const copy = [...mediaImages];
-                        copy[idx].url = val;
-                        setMediaImages(copy);
-                      }}
-                    />
-
-                    {img.url && (
-                      <div>
-                        <label className="block text-[10px] font-semibold text-slate-500 mb-0.5">Ajuste Inteligente da Imagem</label>
-                        <select
-                          className="w-full h-8 px-2 bg-slate-50 border border-natural-border rounded-lg text-[11px] outline-none focus:border-natural-primary font-medium focus:ring-1 focus:ring-natural-primary"
-                          value={img.imageFit || 'cover'}
-                          onChange={(e) => {
-                            const copy = [...mediaImages];
-                            copy[idx].imageFit = e.target.value as 'cover' | 'contain';
-                            setMediaImages(copy);
-                          }}
+            <div className="max-h-[440px] overflow-y-auto pr-1.5 scroll-beauty">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {mediaImages.length === 0 ? (
+                  <div className="sm:col-span-2 border-2 border-dashed border-natural-border rounded-xl text-center py-8 text-xs text-slate-400 bg-white">
+                    Nenhuma imagem na galeria. Clique no botão de mais (+) acima para inserir.
+                  </div>
+                ) : (
+                  mediaImages.map((img, idx) => (
+                    <div key={img.id} className="bg-white border border-natural-border rounded-xl p-3 space-y-3 shadow-xs">
+                      <div className="flex justify-between items-center border-b border-slate-100 pb-1.5">
+                        <span className="text-[10px] font-bold text-natural-primary font-mono lowercase">Mídia ID: #{img.id.slice(-4)}</span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveMediaImage(img.id)}
+                          className="p-1 px-2 text-rose-500 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer text-[10px] font-semibold flex items-center gap-0.5"
                         >
-                          <option value="cover">Preencher / Recortar (Corta as bordas para preencher o banner)</option>
-                          <option value="contain">Conter / Mostrar Inteira (Não corta a foto, usa fundo desfocado inteligente)</option>
-                        </select>
+                          <Trash2 className="w-3 h-3" /> Excluir Mídia
+                        </button>
                       </div>
-                    )}
 
-                    <div>
-                      <label className="block text-[10px] font-semibold text-slate-500 mb-0.5">Legenda / Transmissão do Momento</label>
-                      <input
-                        type="text"
-                        className="w-full h-8 px-2 bg-slate-50 border border-natural-border rounded-lg text-[11px] outline-none focus:border-natural-primary font-medium"
-                        placeholder="Insira detalhes e avanços do Gabriel..."
-                        value={img.caption}
-                        onChange={(e) => {
+                      <ImageUploadPicker
+                        value={img.url}
+                        onChange={(val) => {
                           const copy = [...mediaImages];
-                          copy[idx].caption = e.target.value;
+                          copy[idx].url = val;
                           setMediaImages(copy);
                         }}
                       />
+
+                      {img.url && (
+                        <div>
+                          <label className="block text-[10px] font-semibold text-slate-500 mb-0.5">Ajuste Inteligente da Imagem</label>
+                          <select
+                            className="w-full h-8 px-2 bg-slate-50 border border-natural-border rounded-lg text-[11px] outline-none focus:border-natural-primary font-medium focus:ring-1 focus:ring-natural-primary"
+                            value={img.imageFit || 'cover'}
+                            onChange={(e) => {
+                              const copy = [...mediaImages];
+                              copy[idx].imageFit = e.target.value as 'cover' | 'contain';
+                              setMediaImages(copy);
+                            }}
+                          >
+                            <option value="cover">Preencher / Recortar (Corta as bordas para preencher o banner)</option>
+                            <option value="contain">Conter / Mostrar Inteira (Não corta a foto, usa fundo desfocado inteligente)</option>
+                          </select>
+                        </div>
+                      )}
+
+                      <div>
+                        <label className="block text-[10px] font-semibold text-slate-500 mb-0.5">Legenda / Transmissão do Momento</label>
+                        <input
+                          type="text"
+                          className="w-full h-8 px-2 bg-slate-50 border border-natural-border rounded-lg text-[11px] outline-none focus:border-natural-primary font-medium"
+                          placeholder="Insira detalhes e avanços do Gabriel..."
+                          value={img.caption}
+                          onChange={(e) => {
+                            const copy = [...mediaImages];
+                            copy[idx].caption = e.target.value;
+                            setMediaImages(copy);
+                          }}
+                        />
+                      </div>
                     </div>
-                  </div>
-                ))
-              )}
+                  ))
+                )}
+              </div>
             </div>
           </div>
 
@@ -463,51 +465,53 @@ export default function TabStory({
               </button>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {mediaVideos.length === 0 ? (
-                <div className="sm:col-span-2 border-2 border-dashed border-natural-border rounded-xl text-center py-8 text-xs text-slate-400 bg-white">
-                  Nenhum vídeo na galeria. Clique no botão de mais (+) acima para inserir.
-                </div>
-              ) : (
-                mediaVideos.map((vid, idx) => (
-                  <div key={vid.id} className="bg-white border border-natural-border rounded-xl p-3 space-y-3 shadow-xs">
-                    <div className="flex justify-between items-center border-b border-slate-100 pb-1.5">
-                      <span className="text-[10px] font-bold text-natural-primary font-mono lowercase">Vídeo ID: #{vid.id.slice(-4)}</span>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveMediaVideo(vid.id)}
-                        className="p-1 px-2 text-rose-500 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer text-[10px] font-semibold flex items-center gap-0.5"
-                      >
-                        <Trash2 className="w-3 h-3" /> Excluir Vídeo
-                      </button>
-                    </div>
+            <div className="max-h-[440px] overflow-y-auto pr-1.5 scroll-beauty">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {mediaVideos.length === 0 ? (
+                  <div className="sm:col-span-2 border-2 border-dashed border-natural-border rounded-xl text-center py-8 text-xs text-slate-400 bg-white">
+                    Nenhum vídeo na galeria. Clique no botão de mais (+) acima para inserir.
+                  </div>
+                ) : (
+                  mediaVideos.map((vid, idx) => (
+                    <div key={vid.id} className="bg-white border border-natural-border rounded-xl p-3 space-y-3 shadow-xs">
+                      <div className="flex justify-between items-center border-b border-slate-100 pb-1.5">
+                        <span className="text-[10px] font-bold text-natural-primary font-mono lowercase">Vídeo ID: #{vid.id.slice(-4)}</span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveMediaVideo(vid.id)}
+                          className="p-1 px-2 text-rose-500 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer text-[10px] font-semibold flex items-center gap-0.5"
+                        >
+                          <Trash2 className="w-3 h-3" /> Excluir Vídeo
+                        </button>
+                      </div>
 
-                    <VideoUploadPicker
-                      value={vid.url}
-                      onChange={(val) => {
-                        const copy = [...mediaVideos];
-                        copy[idx].url = val;
-                        setMediaVideos(copy);
-                      }}
-                    />
-
-                    <div>
-                      <label className="block text-[10px] font-semibold text-slate-500 mb-0.5">Legenda / Momento do Vídeo</label>
-                      <input
-                        type="text"
-                        className="w-full h-8 px-2 bg-slate-50 border border-natural-border rounded-lg text-[11px] outline-none focus:border-natural-primary font-medium"
-                        placeholder="Ex: Gabriel ensaiando para o samba..."
-                        value={vid.caption || ''}
-                        onChange={(e) => {
+                      <VideoUploadPicker
+                        value={vid.url}
+                        onChange={(val) => {
                           const copy = [...mediaVideos];
-                          copy[idx].caption = e.target.value;
+                          copy[idx].url = val;
                           setMediaVideos(copy);
                         }}
                       />
+
+                      <div>
+                        <label className="block text-[10px] font-semibold text-slate-500 mb-0.5">Legenda / Momento do Vídeo</label>
+                        <input
+                          type="text"
+                          className="w-full h-8 px-2 bg-slate-50 border border-natural-border rounded-lg text-[11px] outline-none focus:border-natural-primary font-medium"
+                          placeholder="Ex: Gabriel ensaiando para o samba..."
+                          value={vid.caption || ''}
+                          onChange={(e) => {
+                            const copy = [...mediaVideos];
+                            copy[idx].caption = e.target.value;
+                            setMediaVideos(copy);
+                          }}
+                        />
+                      </div>
                     </div>
-                  </div>
-                ))
-              )}
+                  ))
+                )}
+              </div>
             </div>
           </div>
 
@@ -544,7 +548,7 @@ export default function TabStory({
               {campaign.bio}
             </p>
 
-            <div className="whitespace-pre-line text-xs sm:text-sm text-slate-650 leading-relaxed space-y-4 font-sans">
+            <div className="max-h-[224px] overflow-y-auto pr-2 scroll-beauty whitespace-pre-line text-xs sm:text-sm text-slate-650 leading-relaxed font-sans">
               {campaign.detailedStory}
             </div>
 
@@ -555,49 +559,51 @@ export default function TabStory({
                 Momentos Reais e Integração (Galeria de Mídia)
               </h3>
               
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {(campaign.images || []).length === 0 ? (
-                  <p className="sm:col-span-2 text-xs text-slate-400 italic">Nenhuma foto anexada a galeria de momentos.</p>
-                ) : (
-                  (campaign.images || []).map((img) => (
-                    <div key={img.id} className="group overflow-hidden rounded-xl border border-natural-border bg-white shadow-xs">
-                      <div className="h-40 w-full overflow-hidden bg-slate-50 relative flex items-center justify-center">
-                        {img.url ? (
-                          img.imageFit === 'contain' ? (
-                            <>
-                              <img
-                                src={img.url}
-                                alt=""
-                                className="absolute inset-0 w-full h-full object-cover blur-md opacity-35 select-none scale-110 pointer-events-none"
-                                referrerPolicy="no-referrer"
-                              />
+              <div className="max-h-[340px] overflow-y-auto pr-1.5 scroll-beauty">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {(campaign.images || []).length === 0 ? (
+                    <p className="sm:col-span-2 text-xs text-slate-400 italic">Nenhuma foto anexada a galeria de momentos.</p>
+                  ) : (
+                    (campaign.images || []).map((img) => (
+                      <div key={img.id} className="group overflow-hidden rounded-xl border border-natural-border bg-white shadow-xs">
+                        <div className="h-40 w-full overflow-hidden bg-slate-50 relative flex items-center justify-center">
+                          {img.url ? (
+                            img.imageFit === 'contain' ? (
+                              <>
+                                <img
+                                  src={img.url}
+                                  alt=""
+                                  className="absolute inset-0 w-full h-full object-cover blur-md opacity-35 select-none scale-110 pointer-events-none"
+                                  referrerPolicy="no-referrer"
+                                />
+                                <img
+                                  src={img.url}
+                                  alt={img.caption}
+                                  className="relative z-10 max-w-full max-h-full object-contain p-1.5 transition-transform duration-350 group-hover:scale-103"
+                                  referrerPolicy="no-referrer"
+                                />
+                              </>
+                            ) : (
                               <img
                                 src={img.url}
                                 alt={img.caption}
-                                className="relative z-10 max-w-full max-h-full object-contain p-1.5 transition-transform duration-350 group-hover:scale-103"
+                                className="absolute inset-0 w-full h-full object-cover transition-transform duration-350 group-hover:scale-103"
                                 referrerPolicy="no-referrer"
                               />
-                            </>
+                            )
                           ) : (
-                            <img
-                              src={img.url}
-                              alt={img.caption}
-                              className="absolute inset-0 w-full h-full object-cover transition-transform duration-350 group-hover:scale-103"
-                              referrerPolicy="no-referrer"
-                            />
-                          )
-                        ) : (
-                          <ImageIcon className="w-8 h-8 text-slate-200" />
-                        )}
+                            <ImageIcon className="w-8 h-8 text-slate-200" />
+                          )}
+                        </div>
+                        <div className="p-2.5 bg-natural-light">
+                          <p className="text-[10px] text-slate-550 font-medium leading-relaxed">
+                            {img.caption}
+                          </p>
+                        </div>
                       </div>
-                      <div className="p-2.5 bg-natural-light">
-                        <p className="text-[10px] text-slate-550 font-medium leading-relaxed">
-                          {img.caption}
-                        </p>
-                      </div>
-                    </div>
-                  ))
-                )}
+                    ))
+                  )}
+                </div>
               </div>
             </div>
 
@@ -608,68 +614,70 @@ export default function TabStory({
                 Registros em Vídeo (Acompanhamento e Treinos)
               </h3>
               
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {(!campaign.videos || campaign.videos.length === 0) ? (
-                  <p className="sm:col-span-2 text-xs text-slate-400 italic">Nenhum vídeo anexado à galeria de momentos.</p>
-                ) : (
-                  campaign.videos.map((vid) => {
-                    const embed = getEmbedUrl(vid.url);
-                    const isBase64 = vid.url?.startsWith('data:');
-                    
-                    return (
-                      <div key={vid.id} id={`vid-card-${vid.id}`} className="group overflow-hidden rounded-xl border border-natural-border bg-white shadow-xs">
-                        <div className="aspect-video w-full bg-slate-950 relative flex items-center justify-center overflow-hidden">
-                          {isBase64 ? (
-                            <video
-                              src={vid.url}
-                              className="w-full h-full object-contain"
-                              controls
-                              preload="metadata"
-                            />
-                          ) : embed ? (
-                            <div className="relative w-full h-full">
-                              <iframe
-                                src={embed}
-                                title={vid.caption || "Acompanhamento em Vídeo"}
-                                className="w-full h-full absolute inset-0"
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                allowFullScreen
+              <div className="max-h-[320px] overflow-y-auto pr-1.5 scroll-beauty">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {(!campaign.videos || campaign.videos.length === 0) ? (
+                    <p className="sm:col-span-2 text-xs text-slate-400 italic">Nenhum vídeo anexado à galeria de momentos.</p>
+                  ) : (
+                    campaign.videos.map((vid) => {
+                      const embed = getEmbedUrl(vid.url);
+                      const isBase64 = vid.url?.startsWith('data:');
+                      
+                      return (
+                        <div key={vid.id} id={`vid-card-${vid.id}`} className="group overflow-hidden rounded-xl border border-natural-border bg-white shadow-xs">
+                          <div className="aspect-video w-full bg-slate-950 relative flex items-center justify-center overflow-hidden">
+                            {isBase64 ? (
+                              <video
+                                src={vid.url}
+                                className="w-full h-full object-contain"
+                                controls
+                                preload="metadata"
                               />
-                            </div>
-                          ) : (
-                            <div className="p-4 text-center text-xs text-slate-400 flex flex-col items-center justify-center h-full">
-                              <Play className="w-8 h-8 text-natural-accent mb-2" />
-                              <span>Vídeo não pôde ser reproduzido diretamente.</span>
-                              <a href={vid.url} target="_blank" rel="noopener noreferrer" className="text-natural-primary underline mt-1 font-bold font-mono">
-                                Assistir Externamente ↗
-                              </a>
-                            </div>
-                          )}
+                            ) : embed ? (
+                              <div className="relative w-full h-full">
+                                <iframe
+                                  src={embed}
+                                  title={vid.caption || "Acompanhamento em Vídeo"}
+                                  className="w-full h-full absolute inset-0"
+                                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                  allowFullScreen
+                                />
+                              </div>
+                            ) : (
+                              <div className="p-4 text-center text-xs text-slate-400 flex flex-col items-center justify-center h-full">
+                                <Play className="w-8 h-8 text-natural-accent mb-2" />
+                                <span>Vídeo não pôde ser reproduzido diretamente.</span>
+                                <a href={vid.url} target="_blank" rel="noopener noreferrer" className="text-natural-primary underline mt-1 font-bold font-mono">
+                                  Assistir Externamente ↗
+                                </a>
+                              </div>
+                            )}
+                          </div>
+                          
+                          <div className="p-2.5 bg-natural-light border-t border-natural-border/30 flex flex-col justify-between gap-2">
+                            {vid.caption && (
+                              <p className="text-[11.5px] text-slate-600 font-medium leading-relaxed italic">
+                                "{vid.caption}"
+                              </p>
+                            )}
+                            {!isBase64 && vid.url && (
+                              <div className="flex justify-end pt-1">
+                                <a
+                                  href={vid.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 text-[10px] font-bold text-natural-primary hover:text-natural-accent bg-white px-2.5 py-1 rounded-md border border-natural-border/55 hover:border-natural-accent transition-all cursor-pointer shadow-xs"
+                                >
+                                  <Film className="w-3 h-3 text-natural-primary" /> Assistir no YouTube ↗
+                                </a>
+                              </div>
+                            )}
+                          </div>
                         </div>
-                        
-                        <div className="p-2.5 bg-natural-light border-t border-natural-border/30 flex flex-col justify-between gap-2">
-                          {vid.caption && (
-                            <p className="text-[11.5px] text-slate-600 font-medium leading-relaxed italic">
-                              "{vid.caption}"
-                            </p>
-                          )}
-                          {!isBase64 && vid.url && (
-                            <div className="flex justify-end pt-1">
-                              <a
-                                href={vid.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1 text-[10px] font-bold text-natural-primary hover:text-natural-accent bg-white px-2.5 py-1 rounded-md border border-natural-border/55 hover:border-natural-accent transition-all cursor-pointer shadow-xs"
-                              >
-                                <Film className="w-3 h-3 text-natural-primary" /> Assistir no YouTube ↗
-                              </a>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })
-                )}
+                      );
+                    })
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -746,7 +754,7 @@ export default function TabStory({
                 </span>
               </div>
 
-              <div className="space-y-3 max-h-[350px] overflow-y-auto pr-1 scrollbar-thin">
+              <div className="space-y-3 max-h-[350px] overflow-y-auto pr-1 scroll-beauty">
                 {(!contributors || contributors.length === 0) ? (
                   <p className="text-xs text-slate-400 italic text-center py-4">Nenhuma contribuição listada até o momento.</p>
                 ) : (

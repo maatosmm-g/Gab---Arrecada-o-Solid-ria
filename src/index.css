@@ -18,3 +18,29 @@
   --color-natural-accent-hover: #D96C1F;
 }
 
+/* Custom smart scrollbar class for elegant UX */
+.scroll-beauty::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+  display: block !important;
+}
+.scroll-beauty::-webkit-scrollbar-track {
+  background: rgba(90, 90, 64, 0.05);
+  border-radius: 9999px;
+  border: 1px solid rgba(90, 90, 64, 0.02);
+}
+.scroll-beauty::-webkit-scrollbar-thumb {
+  background: rgba(90, 90, 64, 0.35);
+  border-radius: 9999px;
+  border: 1.5px solid transparent;
+  background-clip: padding-box;
+}
+.scroll-beauty::-webkit-scrollbar-thumb:hover {
+  background: #F27D26; /* Dynamic premium hover highlight matching natural-accent */
+  border-radius: 9999px;
+}
+.scroll-beauty {
+  scrollbar-width: auto;
+  scrollbar-color: rgba(90, 90, 64, 0.35) rgba(90, 90, 64, 0.05);
+}
+
