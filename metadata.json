@@ -1,0 +1,6 @@
+{
+  "name": "Gabriel Moraes Matos - Arrecadação Solidária",
+  "description": "Plataforma de arrecadação solidária, transparência e engajamento para a causa de Gabriel Moraes Matos e apoio a necessidades terapêuticas e de inclusão.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
