@@ -14,6 +14,8 @@ interface TabStoryProps {
   onUpdateCampaign: (updated: Campaign) => void;
   contributors?: Contributor[];
   onDeleteContributor?: (id: string) => void;
+  onAddContributor?: (newC: Contributor) => void;
+  onUpdateContributor?: (updatedC: Contributor) => void;
 }
 
 export default function TabStory({ 
@@ -21,7 +23,9 @@ export default function TabStory({
   isAdmin, 
   onUpdateCampaign,
   contributors = [],
-  onDeleteContributor
+  onDeleteContributor,
+  onAddContributor,
+  onUpdateContributor
 }: TabStoryProps) {
   const [isEditing, setIsEditing] = useState(false);
 
@@ -61,6 +65,7 @@ export default function TabStory({
   const [location, setLocation] = useState(campaign.location);
   const [targetAmount, setTargetAmount] = useState(campaign.targetAmount);
   const [raisedAmount, setRaisedAmount] = useState(campaign.raisedAmount);
+  const [donorCount, setDonorCount] = useState(campaign.donorCount);
   const [recurrentTitle, setRecurrentTitle] = useState(campaign.recurrentTitle || "Por que a Recorrência é Vital?");
   const [recurrentDesc, setRecurrentDesc] = useState(campaign.recurrentDesc || "A fonoaudiologia, o neuropediatra e a terapia ocupacional sensorial não são pontuais — são tratamentos cumulativos e permanentes. Garantir uma base de apoiadores mensais protege a rotina do Gabriel de interrupções.");
   
@@ -82,6 +87,24 @@ export default function TabStory({
     return campaign.videos || [];
   });
 
+  const [deletingContributorId, setDeletingContributorId] = useState<string | null>(null);
+
+  // States for adding manually a supporter
+  const [isAddingDonor, setIsAddingDonor] = useState(false);
+  const [newDonorName, setNewDonorName] = useState('');
+  const [newDonorAmount, setNewDonorAmount] = useState('');
+  const [newDonorDate, setNewDonorDate] = useState(new Date().toISOString().split('T')[0]);
+  const [newDonorIsRecurring, setNewDonorIsRecurring] = useState(false);
+  const [newDonorMessage, setNewDonorMessage] = useState('');
+
+  // States for editing a supporter
+  const [editingDonorId, setEditingDonorId] = useState<string | null>(null);
+  const [editDonorName, setEditDonorName] = useState('');
+  const [editDonorAmount, setEditDonorAmount] = useState('');
+  const [editDonorDate, setEditDonorDate] = useState('');
+  const [editDonorIsRecurring, setEditDonorIsRecurring] = useState(false);
+  const [editDonorMessage, setEditDonorMessage] = useState('');
+
   const handleSave = () => {
     onUpdateCampaign({
       ...campaign,
@@ -92,6 +115,7 @@ export default function TabStory({
       location,
       targetAmount: Number(targetAmount),
       raisedAmount: Number(raisedAmount),
+      donorCount: Number(donorCount),
       dossierCards,
       images: mediaImages,
       videos: mediaVideos,
@@ -160,6 +184,7 @@ export default function TabStory({
               setLocation(campaign.location);
               setTargetAmount(campaign.targetAmount);
               setRaisedAmount(campaign.raisedAmount);
+              setDonorCount(campaign.donorCount);
               setRecurrentTitle(campaign.recurrentTitle || "Por que a Recorrência é Vital?");
               setRecurrentDesc(campaign.recurrentDesc || "A fonoaudiologia, o neuropediatra e a terapia ocupacional sensorial não são pontuais — são tratamentos cumulativos e permanentes. Garantir uma base de apoiadores mensais protege a rotina do Gabriel de interrupções.");
               setDossierCards(campaign.dossierCards || dossierCards);
@@ -235,6 +260,16 @@ export default function TabStory({
                 className="w-full h-10 px-3 bg-white border border-natural-border rounded-xl text-xs font-medium focus:border-natural-primary outline-none"
                 value={raisedAmount}
                 onChange={(e) => setRaisedAmount(Number(e.target.value))}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-[#444430] mb-1">Quantidade de Apoiadores (Pessoas)</label>
+              <input
+                type="number"
+                required
+                className="w-full h-10 px-3 bg-white border border-natural-border rounded-xl text-xs font-medium focus:border-natural-primary outline-none"
+                value={donorCount}
+                onChange={(e) => setDonorCount(Number(e.target.value))}
               />
             </div>
             <div>
@@ -749,63 +784,337 @@ export default function TabStory({
                   <Heart className="w-4 h-4 text-natural-accent fill-natural-accent/10" />
                   Últimos Contribuidores
                 </h3>
-                <span className="text-[10px] bg-natural-light/70 text-natural-primary px-1.5 py-0.5 rounded-md font-bold font-mono">
-                  Ativos 5
+                <span className="text-[10px] bg-natural-light/70 text-natural-primary px-1.5 py-0.5 rounded-md font-bold font-mono animate-pulse">
+                  Campanha: {contributors.length} Apoiadores
                 </span>
               </div>
+
+              {/* Botão administrativo para abrir form de adicionar apoiador */}
+              {isAdmin && onAddContributor && !isAddingDonor && (
+                <button
+                  type="button"
+                  id="btn-add-donor-trigger"
+                  onClick={() => {
+                    setIsAddingDonor(true);
+                    setNewDonorName('');
+                    setNewDonorAmount('');
+                    setNewDonorDate(new Date().toISOString().split('T')[0]);
+                    setNewDonorIsRecurring(false);
+                    setNewDonorMessage('');
+                  }}
+                  className="w-full py-2 bg-natural-light border border-natural-primary/30 text-natural-primary hover:bg-natural-primary hover:text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
+                >
+                  <Plus className="w-3.5 h-3.5" /> Adicionar Novo Apoiador (Manual)
+                </button>
+              )}
+
+              {/* Form de adicionar apoiador */}
+              {isAdmin && isAddingDonor && (
+                <div id="form-add-donor-container" className="p-4 bg-natural-light/65 border border-natural-primary/20 rounded-xl space-y-3 shadow-2xs text-left">
+                  <h4 className="text-[11px] font-bold text-natural-primary uppercase tracking-wide">Cadastrar Novo Apoio</h4>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-[10px] font-semibold text-slate-500 mb-0.5">Nome do Apoiador</label>
+                      <input
+                        type="text"
+                        id="new-donor-name"
+                        className="w-full h-8 px-2 bg-white border border-natural-border rounded-lg text-xs outline-none focus:border-natural-primary font-medium"
+                        placeholder="Ex: Maria Alice"
+                        value={newDonorName}
+                        onChange={(e) => setNewDonorName(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-semibold text-slate-500 mb-0.5">Valor (R$)</label>
+                      <input
+                        type="number"
+                        id="new-donor-amount"
+                        className="w-full h-8 px-2 bg-white border border-natural-border rounded-lg text-xs outline-none focus:border-natural-primary font-medium"
+                        placeholder="Ex: 50"
+                        value={newDonorAmount}
+                        onChange={(e) => setNewDonorAmount(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-[10px] font-semibold text-slate-500 mb-0.5">Data</label>
+                      <input
+                        type="date"
+                        id="new-donor-date"
+                        className="w-full h-8 px-2 bg-white border border-natural-border rounded-lg text-[11px] font-semibold text-slate-600 outline-none focus:border-natural-primary"
+                        value={newDonorDate}
+                        onChange={(e) => setNewDonorDate(e.target.value)}
+                      />
+                    </div>
+                    <div className="flex flex-col justify-center">
+                      <label className="block text-[10px] font-semibold text-slate-500 mb-1">Tipo de Apoio</label>
+                      <label className="inline-flex items-center gap-1.5 cursor-pointer text-xs font-semibold text-slate-700">
+                        <input
+                          type="checkbox"
+                          id="new-donor-recurring"
+                          className="rounded border-natural-border text-natural-primary focus:ring-natural-primary"
+                          checked={newDonorIsRecurring}
+                          onChange={(e) => setNewDonorIsRecurring(e.target.checked)}
+                        />
+                        <span>Mensal / Recorrente</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-semibold text-slate-500 mb-0.5">Mensagem de Apoio</label>
+                    <input
+                      type="text"
+                      id="new-donor-message"
+                      className="w-full h-8 px-2 bg-white border border-natural-border rounded-lg text-xs outline-none focus:border-natural-primary font-medium"
+                      placeholder="Ex: Deus abençoe a jornada do Gabriel!"
+                      value={newDonorMessage}
+                      onChange={(e) => setNewDonorMessage(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="flex justify-end gap-2 pt-1">
+                    <button
+                      type="button"
+                      id="btn-cancel-add-donor"
+                      onClick={() => setIsAddingDonor(false)}
+                      className="h-8 px-3 rounded-lg text-xs font-bold text-slate-500 hover:bg-slate-100 cursor-pointer"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      type="button"
+                      id="btn-save-add-donor"
+                      onClick={() => {
+                        const amt = parseFloat(newDonorAmount);
+                        if (!newDonorName.trim()) {
+                          alert("Digite o nome do apoiador.");
+                          return;
+                        }
+                        if (isNaN(amt) || amt <= 0) {
+                          alert("Valor precisa ser um número válido maior que zero.");
+                          return;
+                        }
+                        const nDonor: Contributor = {
+                          id: `cont-mn-${Date.now()}`,
+                          name: newDonorName.trim(),
+                          amount: amt,
+                          date: newDonorDate || new Date().toISOString().split('T')[0],
+                          isRecurring: newDonorIsRecurring,
+                          message: newDonorMessage.trim() || 'Apoiou a jornada do Gabriel!'
+                        };
+                        onAddContributor?.(nDonor);
+                        setIsAddingDonor(false);
+                      }}
+                      className="h-8 px-4 bg-natural-primary hover:bg-natural-primary-dark text-white rounded-lg text-xs font-bold shadow-xs cursor-pointer flex items-center gap-1"
+                    >
+                      <Save className="w-3.5 h-3.5" /> Salvar Apoio
+                    </button>
+                  </div>
+                </div>
+              )}
 
               <div className="space-y-3 max-h-[350px] overflow-y-auto pr-1 scroll-beauty">
                 {(!contributors || contributors.length === 0) ? (
                   <p className="text-xs text-slate-400 italic text-center py-4">Nenhuma contribuição listada até o momento.</p>
                 ) : (
-                  contributors.slice(0, 5).map((donor) => (
-                    <div key={donor.id} className="p-3 bg-slate-50/50 hover:bg-slate-50 border border-natural-border/50 rounded-xl space-y-1.5 transition-all text-left relative group">
-                      <div className="flex justify-between items-start gap-1">
-                        <div>
-                          <span className="font-semibold text-xs text-natural-dark block truncate max-w-[145px]" title={donor.name}>
-                            {donor.name}
-                          </span>
-                          <span className="text-[9px] text-slate-400 font-medium font-mono">
-                            {new Date(donor.date + 'T00:00:00').toLocaleDateString('pt-BR')}
-                          </span>
-                        </div>
-                        <div className="text-right flex flex-col items-end">
-                          <span className="text-xs font-bold text-natural-primary font-mono leading-none">
-                            R$ {donor.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                          </span>
-                          {donor.isRecurring ? (
-                            <span className="text-[8px] text-emerald-600 bg-emerald-50 border border-emerald-100 px-1 rounded font-bold uppercase tracking-wide mt-1 scale-90 origin-right shrink-0">
-                              Mensal ⇄
-                            </span>
-                          ) : (
-                            <span className="text-[8px] text-slate-500 bg-slate-100 px-1 rounded font-bold uppercase tracking-wide mt-1 scale-90 origin-right shrink-0">
-                              Único
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      {donor.message && (
-                        <p className="text-[10.5px] text-slate-600 italic bg-white p-2 rounded-lg border border-slate-100 font-sans leading-relaxed">
-                          "{donor.message}"
-                        </p>
-                      )}
+                  contributors.map((donor) => {
+                    const isEditingThisDonor = editingDonorId === donor.id;
+                    if (isEditingThisDonor) {
+                      return (
+                        <div key={donor.id} id={`edit-donor-card-${donor.id}`} className="p-3 bg-white border-2 border-natural-primary/45 rounded-xl space-y-2.5 shadow-xs text-left">
+                          <span className="text-[10px] font-bold text-natural-primary uppercase tracking-wide block">Editar Apoiador</span>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <label className="block text-[9px] font-semibold text-slate-500 mb-0.5">Nome</label>
+                              <input
+                                type="text"
+                                id={`edit-donor-name-${donor.id}`}
+                                className="w-full h-8 px-2 bg-slate-50 border border-natural-border rounded-lg text-xs outline-none focus:border-natural-primary font-medium"
+                                value={editDonorName}
+                                onChange={(e) => setEditDonorName(e.target.value)}
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[9px] font-semibold text-slate-500 mb-0.5">Valor (R$)</label>
+                              <input
+                                type="number"
+                                id={`edit-donor-amount-${donor.id}`}
+                                className="w-full h-8 px-2 bg-slate-50 border border-natural-border rounded-lg text-xs outline-none focus:border-natural-primary font-medium"
+                                value={editDonorAmount}
+                                onChange={(e) => setEditDonorAmount(e.target.value)}
+                              />
+                            </div>
+                          </div>
 
-                      {/* Botão administrativo para remover contribuição incorreta */}
-                      {isAdmin && onDeleteContributor && (
-                        <button
-                          onClick={() => {
-                            if (confirm(`Remover contribuição de ${donor.name}?`)) {
-                              onDeleteContributor(donor.id);
-                            }
-                          }}
-                          className="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity bg-rose-50 hover:bg-rose-100 text-rose-600 p-1 rounded border border-rose-200 cursor-pointer shadow-2xs"
-                          title="Remover Registro de Doação (Admin)"
-                        >
-                          <Trash2 className="w-3 h-3" />
-                        </button>
-                      )}
-                    </div>
-                  ))
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <label className="block text-[9px] font-semibold text-slate-500 mb-0.5">Data</label>
+                              <input
+                                type="date"
+                                id={`edit-donor-date-${donor.id}`}
+                                className="w-full h-8 px-2 bg-slate-50 border border-natural-border rounded-lg text-[10px] outline-none focus:border-natural-primary"
+                                value={editDonorDate}
+                                onChange={(e) => setEditDonorDate(e.target.value)}
+                              />
+                            </div>
+                            <div className="flex flex-col justify-end pb-1">
+                              <label className="inline-flex items-center gap-1.5 cursor-pointer text-xs font-semibold text-slate-700">
+                                <input
+                                  type="checkbox"
+                                  id={`edit-donor-recurring-${donor.id}`}
+                                  className="rounded border-natural-border text-natural-primary focus:ring-natural-primary scale-90"
+                                  checked={editDonorIsRecurring}
+                                  onChange={(e) => setEditDonorIsRecurring(e.target.checked)}
+                                />
+                                <span>Mensal / Recorrente</span>
+                              </label>
+                            </div>
+                          </div>
+
+                          <div>
+                            <label className="block text-[9px] font-semibold text-slate-500 mb-0.5">Mensagem</label>
+                            <input
+                              type="text"
+                              id={`edit-donor-message-${donor.id}`}
+                              className="w-full h-8 px-2 bg-slate-50 border border-natural-border rounded-lg text-xs outline-none focus:border-natural-primary font-medium"
+                              value={editDonorMessage}
+                              onChange={(e) => setEditDonorMessage(e.target.value)}
+                            />
+                          </div>
+
+                          <div className="flex justify-end gap-1.5 pt-0.5">
+                            <button
+                              type="button"
+                              id={`btn-cancel-edit-donor-${donor.id}`}
+                              onClick={() => setEditingDonorId(null)}
+                              className="h-8 px-3 rounded-lg text-xs font-bold text-slate-500 hover:bg-slate-100 cursor-pointer"
+                            >
+                              Cancelar
+                            </button>
+                            <button
+                              type="button"
+                              id={`btn-save-edit-donor-${donor.id}`}
+                              onClick={() => {
+                                const amt = parseFloat(editDonorAmount);
+                                if (!editDonorName.trim()) {
+                                  alert("O nome do apoiador é obrigatório.");
+                                  return;
+                                }
+                                if (isNaN(amt) || amt <= 0) {
+                                  alert("O valor precisa ser maior que zero.");
+                                  return;
+                                }
+                                onUpdateContributor?.({
+                                  ...donor,
+                                  name: editDonorName.trim(),
+                                  amount: amt,
+                                  date: editDonorDate || donor.date,
+                                  isRecurring: editDonorIsRecurring,
+                                  message: editDonorMessage.trim()
+                                });
+                                setEditingDonorId(null);
+                              }}
+                              className="h-8 px-4 bg-natural-primary hover:bg-natural-primary-dark text-white rounded-lg text-xs font-bold cursor-pointer"
+                            >
+                              Salvar
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div key={donor.id} className="p-3 bg-slate-50/50 hover:bg-slate-50 border border-natural-border/50 rounded-xl space-y-1.5 transition-all text-left relative group">
+                        <div className="flex justify-between items-start gap-1">
+                          <div>
+                            <span className="font-semibold text-xs text-natural-dark block truncate max-w-[145px]" title={donor.name}>
+                              {donor.name}
+                            </span>
+                            <span className="text-[9px] text-slate-400 font-medium font-mono">
+                              {new Date(donor.date + 'T00:00:00').toLocaleDateString('pt-BR')}
+                            </span>
+                          </div>
+                          <div className="text-right flex flex-col items-end">
+                            <span className="text-xs font-bold text-natural-primary font-mono leading-none">
+                              R$ {donor.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                            </span>
+                            {donor.isRecurring ? (
+                              <span className="text-[8px] text-emerald-600 bg-emerald-50 border border-emerald-100 px-1 rounded font-bold uppercase tracking-wide mt-1 scale-90 origin-right shrink-0">
+                                Mensal ⇄
+                              </span>
+                            ) : (
+                              <span className="text-[8px] text-slate-500 bg-slate-100 px-1 rounded font-bold uppercase tracking-wide mt-1 scale-90 origin-right shrink-0">
+                                Único
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        {donor.message && (
+                          <p className="text-[10.5px] text-slate-600 italic bg-white p-2 rounded-lg border border-slate-100 font-sans leading-relaxed">
+                            "{donor.message}"
+                          </p>
+                        )}
+
+                        {/* Botão administrativo para remover e editar contribuição incorreta */}
+                        {isAdmin && onDeleteContributor && (
+                          <div className="absolute top-1.5 right-1.5 z-10 flex items-center gap-1">
+                            {deletingContributorId !== donor.id ? (
+                              <>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setEditingDonorId(donor.id);
+                                    setEditDonorName(donor.name);
+                                    setEditDonorAmount(donor.amount.toString());
+                                    setEditDonorDate(donor.date);
+                                    setEditDonorIsRecurring(donor.isRecurring);
+                                    setEditDonorMessage(donor.message || '');
+                                  }}
+                                  className="bg-slate-50 hover:bg-slate-105 hover:border-natural-primary/50 text-natural-primary p-1 rounded border border-natural-border cursor-pointer shadow-2xs transition-all flex items-center justify-center h-6 w-6"
+                                  title="Editar Informações do Apoiador"
+                                >
+                                  <Edit2 className="w-3 h-3 text-natural-primary" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setDeletingContributorId(donor.id)}
+                                  className="bg-rose-50 hover:bg-rose-100 text-rose-600 p-1 rounded border border-rose-200 cursor-pointer shadow-2xs transition-colors flex items-center justify-center h-6 w-6"
+                                  title="Remover Registro de Doação"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </>
+                            ) : (
+                              <div className="flex items-center gap-1.5 bg-rose-50 border border-rose-250 p-1 rounded-lg shadow-sm">
+                                <span className="text-[9px] font-extrabold text-rose-700 font-sans px-1 uppercase">Excluir?</span>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    onDeleteContributor(donor.id);
+                                    setDeletingContributorId(null);
+                                  }}
+                                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold p-0.5 px-1.2 rounded text-[9px] cursor-pointer"
+                                >
+                                  Sim
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setDeletingContributorId(null)}
+                                  className="bg-slate-500 hover:bg-slate-600 text-white font-bold p-0.5 px-1.2 rounded text-[9px] cursor-pointer"
+                                  id={`btn-cancel-delete-${donor.id}`}
+                                >
+                                  Não
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })
                 )}
               </div>
             </div>

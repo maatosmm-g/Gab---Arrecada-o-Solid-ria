@@ -14,7 +14,7 @@ interface DonationModalProps {
 export default function DonationModal({ isOpen, onClose, onSuccessPay, patientName, pixKey, isSimulationMode = true }: DonationModalProps) {
   const [amount, setAmount] = useState<number>(50);
   const [customAmount, setCustomAmount] = useState<string>('');
-  const [isRecurring, setIsRecurring] = useState<boolean>(true); // Default recurring
+  const [isRecurring, setIsRecurring] = useState<boolean>(false); // Default single donation
   const [paymentMethod, setPaymentMethod] = useState<'pix' | 'card'>('pix');
   const [copied, setCopied] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -120,32 +120,6 @@ export default function DonationModal({ isOpen, onClose, onSuccessPay, patientNa
 
             {step === 'form' ? (
               <form onSubmit={handleSubmitPayment} className="p-5 space-y-4 overflow-y-auto flex-1 max-h-[calc(90vh-80px)] scrollbar-thin">
-                {/* Tipo de recorrência */}
-                <div className="grid grid-cols-2 gap-2 p-1 bg-natural-border/30 rounded-xl animate-fadeIn" id="recurrence-selector">
-                  <button
-                    type="button"
-                    onClick={() => setIsRecurring(true)}
-                    className={`h-8 text-[11px] font-bold rounded-lg transition-all cursor-pointer ${
-                      isRecurring
-                        ? 'bg-white text-natural-primary shadow-xs'
-                        : 'text-[#444430]/75 hover:text-natural-dark'
-                    }`}
-                  >
-                    Apoio Recorrente (Mensal)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setIsRecurring(false)}
-                    className={`h-8 text-[11px] font-bold rounded-lg transition-all cursor-pointer ${
-                      !isRecurring
-                        ? 'bg-white text-natural-primary shadow-xs'
-                        : 'text-[#444430]/75 hover:text-natural-dark'
-                    }`}
-                  >
-                    Doação Única
-                  </button>
-                </div>
-
                 {/* Seleção de valores */}
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-[#444430] block">Escolha o valor da contribuição:</label>

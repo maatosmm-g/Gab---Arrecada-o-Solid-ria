@@ -32,6 +32,7 @@ export default function TabReports({
 
   // Editing raw states
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [deletingReportId, setDeletingReportId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState('');
   const [editDoctor, setEditDoctor] = useState('');
   const [editCRM, setEditCRM] = useState('');
@@ -360,25 +361,44 @@ export default function TabReports({
 
                       {/* Controle Editor se Logado */}
                       {isAdmin && (
-                        <div className="flex gap-1" id={`report-admin-panel-${rep.id}`}>
-                          <button
-                            onClick={() => startEdit(rep)}
-                            className="p-1 hover:bg-natural-light rounded text-natural-primary transition-colors cursor-pointer"
-                            title="Editar parâmetros do laudo"
-                          >
-                            <Edit2 className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            onClick={() => {
-                              if (confirm('Tem certeza de que deseja expurgar e excluir esse relatório médico do dossiê solidário?')) {
-                                onDeleteReport(rep.id);
-                              }
-                            }}
-                            className="p-1 hover:bg-natural-light rounded text-[#F27D26] transition-colors cursor-pointer"
-                            title="Excluir documento"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
+                        <div className="flex items-center gap-1.5" id={`report-admin-panel-${rep.id}`}>
+                          {deletingReportId !== rep.id ? (
+                            <>
+                              <button
+                                onClick={() => startEdit(rep)}
+                                className="p-1 hover:bg-natural-light rounded text-natural-primary transition-colors cursor-pointer"
+                                title="Editar parâmetros do laudo"
+                              >
+                                <Edit2 className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={() => setDeletingReportId(rep.id)}
+                                className="p-1 hover:bg-rose-50 hover:text-rose-600 rounded text-slate-400 transition-colors cursor-pointer"
+                                title="Excluir documento"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </>
+                          ) : (
+                            <div className="flex items-center gap-1 bg-rose-50 border border-rose-200 p-0.5 rounded shadow-xs">
+                              <span className="text-[8px] font-extrabold text-rose-700 uppercase px-0.5">Excluir?</span>
+                              <button
+                                onClick={() => {
+                                  onDeleteReport(rep.id);
+                                  setDeletingReportId(null);
+                                }}
+                                className="px-1.5 py-0.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-[8px] rounded cursor-pointer"
+                              >
+                                Sim
+                              </button>
+                              <button
+                                onClick={() => setDeletingReportId(null)}
+                                className="px-1.5 py-0.5 bg-slate-500 hover:bg-slate-600 text-white font-extrabold text-[8px] rounded cursor-pointer"
+                              >
+                                Não
+                              </button>
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>

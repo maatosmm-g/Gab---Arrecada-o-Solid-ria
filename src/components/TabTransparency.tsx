@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { TransparencyItem, Campaign } from '../types';
+import { obterDadosDaCampanha } from '../campanhaConfig';
 import { 
   PlusCircle, Trash2, Edit2, Check, ExternalLink, Calendar, 
   CreditCard, DollarSign, RefreshCw, Layers, CheckCircle2, 
@@ -54,6 +55,7 @@ export default function TabTransparency({
 
   // Row/card editing states
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [deletingExpenseId, setDeletingExpenseId] = useState<string | null>(null);
   const [editDesc, setEditDesc] = useState('');
   const [editCategory, setEditCategory] = useState<TransparencyItem['category']>('Terapias');
   const [editAmount, setEditAmount] = useState('');
@@ -61,7 +63,8 @@ export default function TabTransparency({
   const [editDate, setEditDate] = useState('');
   const [editNotes, setEditNotes] = useState('');
 
-  const percentRaised = Math.min(100, Math.round((campaign.raisedAmount / campaign.targetAmount) * 105) / 1.05);
+  const dadosDaCampanha = obterDadosDaCampanha(campaign);
+  const percentRaised = dadosDaCampanha.progressoPorcentagemAjustada;
 
   const startEditRow = (item: TransparencyItem) => {
     setEditingId(item.id);
@@ -117,10 +120,10 @@ export default function TabTransparency({
           <p className="text-[10px] uppercase font-mono tracking-widest text-[#F27D26] font-bold">Resumo Financeiro e Metas</p>
           <div className="space-y-1">
             <span className="text-3xl font-serif font-bold italic tracking-tight">
-              R$ {campaign.raisedAmount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              R$ {dadosDaCampanha.valorArrecadadoFormatado}
             </span>
             <span className="text-slate-355 block text-xs">
-              arrecadados de uma meta global de R$ {campaign.targetAmount.toLocaleString('pt-BR')}
+              arrecadados de uma meta global de R$ {dadosDaCampanha.metaGlobalFormatada}
             </span>
           </div>
 
@@ -128,7 +131,7 @@ export default function TabTransparency({
           <div className="space-y-1.5 pt-2">
             <div className="flex justify-between text-[11px] font-semibold">
               <span className="text-[#F27D26]">{percentRaised.toFixed(1)}% Alcançados</span>
-              <span className="text-slate-350">R$ {(campaign.targetAmount - campaign.raisedAmount).toLocaleString('pt-BR')} restantes</span>
+              <span className="text-slate-350">R$ {dadosDaCampanha.valorRestanteFormatado} restantes</span>
             </div>
             <div className="w-full h-3 bg-white/10 rounded-full overflow-hidden">
               <motion.div
@@ -534,26 +537,47 @@ export default function TabTransparency({
                 {/* BOTÕES DE EDITAR / EXCLUIR / SALVAR NO CARD (MODO ADMIN) */}
                 {isAdmin && (
                   <div className="flex justify-end gap-1.5 border-t border-dashed border-natural-border/65 pt-2" id={`admin-card-actions-${item.id}`}>
-                    <button
-                      type="button"
-                      onClick={() => startEditRow(item)}
-                      className="h-7 px-3 bg-natural-light border border-natural-border hover:bg-natural-border/30 rounded-lg text-[10px] font-bold text-natural-primary flex items-center gap-1 transition-all cursor-pointer focus:outline-none"
-                      title="Editar e digitar novos valores no card"
-                    >
-                      <Edit2 className="w-3 h-3" /> Editar Card
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (confirm(`Excluir permanentemente o card "${item.description}"?`)) {
-                          onDeleteExpense(item.id);
-                        }
-                      }}
-                      className="h-7 px-3 bg-rose-50 border border-rose-100 hover:bg-rose-100 text-rose-600 rounded-lg text-[10px] font-bold flex items-center gap-1 transition-all cursor-pointer focus:outline-none"
-                      title="Excluir card"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" /> Excluir
-                    </button>
+                    {deletingExpenseId !== item.id ? (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => startEditRow(item)}
+                          className="h-7 px-3 bg-natural-light border border-natural-border hover:bg-natural-border/30 rounded-lg text-[10px] font-bold text-natural-primary flex items-center gap-1 transition-all cursor-pointer focus:outline-none"
+                          title="Editar e digitar novos valores no card"
+                        >
+                          <Edit2 className="w-3 h-3" /> Editar Card
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setDeletingExpenseId(item.id)}
+                          className="h-7 px-3 bg-rose-50 border border-rose-100 hover:bg-rose-100 text-rose-600 rounded-lg text-[10px] font-bold flex items-center gap-1 transition-all cursor-pointer focus:outline-none"
+                          title="Excluir card"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" /> Excluir
+                        </button>
+                      </>
+                    ) : (
+                      <div className="flex items-center gap-1.5 bg-rose-50 border border-rose-200 p-1 rounded-lg">
+                        <span className="text-[10px] font-extrabold text-rose-700 uppercase px-1">Excluir?</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            onDeleteExpense(item.id);
+                            setDeletingExpenseId(null);
+                          }}
+                          className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-[9px] rounded-md cursor-pointer"
+                        >
+                          Sim
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setDeletingExpenseId(null)}
+                          className="px-2.5 py-1 bg-slate-500 hover:bg-slate-600 text-white font-extrabold text-[9px] rounded-md cursor-pointer"
+                        >
+                          Não
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

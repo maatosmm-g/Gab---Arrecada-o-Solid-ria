@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { initialCampaign, initialTransparency, initialUpdates, initialMedicalReports, defaultPINConfig, initialContributors } from './mockData';
 import { Campaign, TransparencyItem, UpdateItem, MedicalReport, PINConfig, Contributor } from './types';
 import PINPanel from './components/PINPanel';
+import { obterDadosDaCampanha } from './campanhaConfig';
 import DonationModal from './components/DonationModal';
 import TabStory from './components/TabStory';
 import TabTransparency from './components/TabTransparency';
@@ -57,6 +58,11 @@ export default function App() {
     return saved !== null ? saved === 'true' : true;
   });
 
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+
+  // Centralização de dados e engrenagens de cálculo matemático da campanha
+  const dadosDaCampanha = obterDadosDaCampanha(campaign);
+
   // Helper para converter link cru do YouTube ou Vimeo em Embed URL
   const getEmbedUrl = (rawUrl: string): string => {
     if (!rawUrl) return '';
@@ -96,6 +102,12 @@ export default function App() {
   const [heroPixKey, setHeroPixKey] = useState('');
   const [heroWhatsappNumber, setHeroWhatsappNumber] = useState('');
   const [heroMiniCards, setHeroMiniCards] = useState<Array<{ id: string; label: string; value: string }>>([]);
+  const [heroShortTermObjectives, setHeroShortTermObjectives] = useState('');
+  const [heroShortTermFontSize, setHeroShortTermFontSize] = useState('text-xs');
+  const [heroShortTermTextColor, setHeroShortTermTextColor] = useState('text-slate-800');
+  const [heroShortTermFontWeight, setHeroShortTermFontWeight] = useState('font-medium');
+  const [heroShortTermIsItalic, setHeroShortTermIsItalic] = useState(true);
+  const [heroShortTermBgColor, setHeroShortTermBgColor] = useState('bg-[#FCFAF2]/80');
 
   const startEditingHero = () => {
     setHeroPatientName(campaign.patientName);
@@ -106,6 +118,12 @@ export default function App() {
     setHeroPixKey(campaign.pixKey || '');
     setHeroWhatsappNumber(campaign.whatsappNumber || '');
     setHeroMiniCards(campaign.miniCards ? [...campaign.miniCards] : []);
+    setHeroShortTermObjectives(campaign.shortTermObjectives || '');
+    setHeroShortTermFontSize(campaign.shortTermFontSize || 'text-xs');
+    setHeroShortTermTextColor(campaign.shortTermTextColor || 'text-slate-800');
+    setHeroShortTermFontWeight(campaign.shortTermFontWeight || 'font-medium');
+    setHeroShortTermIsItalic(campaign.shortTermIsItalic !== undefined ? campaign.shortTermIsItalic : true);
+    setHeroShortTermBgColor(campaign.shortTermBgColor || 'bg-[#FCFAF2]/80');
     setIsEditingHero(true);
   };
 
@@ -120,6 +138,12 @@ export default function App() {
       pixKey: heroPixKey,
       whatsappNumber: heroWhatsappNumber,
       miniCards: heroMiniCards,
+      shortTermObjectives: heroShortTermObjectives,
+      shortTermFontSize: heroShortTermFontSize,
+      shortTermTextColor: heroShortTermTextColor,
+      shortTermFontWeight: heroShortTermFontWeight,
+      shortTermIsItalic: heroShortTermIsItalic,
+      shortTermBgColor: heroShortTermBgColor,
     });
     setIsEditingHero(false);
     setLastDonationAlert("Apresentação e mini cards salvos!");
@@ -257,27 +281,26 @@ export default function App() {
 
   // Resetar dados para o padrão em caso de testes
   const handleResetStorage = () => {
-    if (confirm('Deseja restaurar as histórias, despesas e PIN iniciais de fábrica da campanha do Gabriel?')) {
-      localStorage.removeItem('solidary_campaign');
-      localStorage.removeItem('solidary_transparency');
-      localStorage.removeItem('solidary_updates');
-      localStorage.removeItem('solidary_reports');
-      localStorage.removeItem('solidary_pin');
-      localStorage.removeItem('solidary_contributors');
-      localStorage.removeItem('solidary_simulation_mode');
-      
-      setCampaign(initialCampaign);
-      setTransparency(initialTransparency);
-      setUpdates(initialUpdates);
-      setReports(initialMedicalReports);
-      setPinConfig(defaultPINConfig);
-      setContributors(initialContributors);
-      setIsSimulationMode(true);
-      setIsAdmin(false);
+    localStorage.removeItem('solidary_campaign');
+    localStorage.removeItem('solidary_transparency');
+    localStorage.removeItem('solidary_updates');
+    localStorage.removeItem('solidary_reports');
+    localStorage.removeItem('solidary_pin');
+    localStorage.removeItem('solidary_contributors');
+    localStorage.removeItem('solidary_simulation_mode');
+    
+    setCampaign(initialCampaign);
+    setTransparency(initialTransparency);
+    setUpdates(initialUpdates);
+    setReports(initialMedicalReports);
+    setPinConfig(defaultPINConfig);
+    setContributors(initialContributors);
+    setIsSimulationMode(true);
+    setIsAdmin(false);
 
-      setLastDonationAlert("Todos os dados foram resetados com sucesso para os valores padrão!");
-      setTimeout(() => setLastDonationAlert(null), 3000);
-    }
+    setLastDonationAlert("Todos os dados foram resetados com sucesso para os valores padrão!");
+    setTimeout(() => setLastDonationAlert(null), 3000);
+    setShowResetConfirm(false);
   };
 
   return (
@@ -425,6 +448,102 @@ export default function App() {
                     value={heroBio}
                     onChange={(e) => setHeroBio(e.target.value)}
                   />
+                </div>
+
+                <div className="bg-white border border-natural-border rounded-2xl p-4 space-y-3 shadow-2xs">
+                  <div className="flex items-center gap-1 text-natural-primary">
+                    <Sparkles className="w-4 h-4 text-[#F27D26]" />
+                    <span className="block text-xs font-bold uppercase tracking-wide">Espaço em Branco: Objetivos de Curto Prazo</span>
+                  </div>
+                  
+                  {/* Barra de Ferramentas de Estilo */}
+                  <div className="flex flex-wrap items-center gap-2 p-2 bg-natural-light/80 border border-natural-border/50 rounded-xl text-xs">
+                    {/* Font Size */}
+                    <div className="flex items-center gap-1">
+                      <span className="text-[10px] text-slate-500 font-bold">Fonte:</span>
+                      <select
+                        className="bg-white border border-natural-border rounded px-1.5 h-6 text-[10px] font-semibold"
+                        value={heroShortTermFontSize}
+                        onChange={(e) => setHeroShortTermFontSize(e.target.value)}
+                      >
+                        <option value="text-xs">Pequeno (xs)</option>
+                        <option value="text-sm">Médio (sm)</option>
+                        <option value="text-base">Médio-Grande (base)</option>
+                        <option value="text-lg">Grande (lg)</option>
+                      </select>
+                    </div>
+
+                    {/* Font Weight */}
+                    <div className="flex items-center gap-1 border-l border-natural-border/60 pl-2">
+                      <span className="text-[10px] text-slate-500 font-bold">Peso:</span>
+                      <select
+                        className="bg-white border border-natural-border rounded px-1.5 h-6 text-[10px] font-semibold"
+                        value={heroShortTermFontWeight}
+                        onChange={(e) => setHeroShortTermFontWeight(e.target.value)}
+                      >
+                        <option value="font-normal">Fina (normal)</option>
+                        <option value="font-medium">Média (medium)</option>
+                        <option value="font-semibold">Semi-Negrito (semibold)</option>
+                        <option value="font-bold">Negrito (bold)</option>
+                      </select>
+                    </div>
+
+                    {/* Text Color Presets */}
+                    <div className="flex items-center gap-1 border-l border-natural-border/60 pl-2">
+                      <span className="text-[10px] text-slate-500 font-bold">Cor:</span>
+                      <select
+                        className="bg-white border border-natural-border rounded px-1.5 h-6 text-[10px] font-semibold"
+                        value={heroShortTermTextColor}
+                        onChange={(e) => setHeroShortTermTextColor(e.target.value)}
+                      >
+                        <option value="text-slate-800">Cinza Escuro</option>
+                        <option value="text-[#5A5A40]">Verde Oliva</option>
+                        <option value="text-[#F27D26]">Laranja Alerta</option>
+                        <option value="text-blue-600">Azul Sereno</option>
+                        <option value="text-emerald-700">Verde Saúde</option>
+                      </select>
+                    </div>
+
+                    {/* Background Color Presets */}
+                    <div className="flex items-center gap-1 border-l border-natural-border/60 pl-2">
+                      <span className="text-[10px] text-slate-500 font-bold">Fundo:</span>
+                      <select
+                        className="bg-white border border-natural-border rounded px-1.5 h-6 text-[10px] font-semibold"
+                        value={heroShortTermBgColor}
+                        onChange={(e) => setHeroShortTermBgColor(e.target.value)}
+                      >
+                        <option value="bg-[#FCFAF2]/80">Creme Suave</option>
+                        <option value="bg-amber-50/50">Bege Amanteigado</option>
+                        <option value="bg-rose-50/40">Rosa Suave</option>
+                        <option value="bg-blue-50/50">Celeste</option>
+                        <option value="bg-emerald-50/40">Menta Claro</option>
+                        <option value="bg-transparent border border-dashed border-natural-border/70">Ocultar Caixa</option>
+                      </select>
+                    </div>
+
+                    {/* Italic Toggle */}
+                    <button
+                      type="button"
+                      onClick={() => setHeroShortTermIsItalic(prev => !prev)}
+                      className={`h-6 px-2 rounded font-serif italic text-xs font-bold border transition-colors cursor-pointer ${
+                        heroShortTermIsItalic
+                          ? 'bg-natural-primary border-natural-primary/30 text-white'
+                          : 'bg-white border-natural-border text-slate-705 hover:bg-slate-50'
+                      }`}
+                    >
+                      Itálico
+                    </button>
+                  </div>
+
+                  <label className="block text-[10px] font-semibold text-slate-550">Conteúdo dos Objetivos de Curto Prazo:</label>
+                  <textarea
+                    rows={4}
+                    className="w-full p-3 bg-slate-50 border border-natural-border rounded-xl text-xs outline-none focus:border-natural-primary leading-relaxed text-slate-800 font-sans"
+                    placeholder="Escreva os objetivos de curto prazo aqui..."
+                    value={heroShortTermObjectives}
+                    onChange={(e) => setHeroShortTermObjectives(e.target.value)}
+                  />
+                  <p className="text-[10px] text-slate-400 italic">Dica: Adicione pontos utilizando o marcador '•' ou '-' para listar os objetivos.</p>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -642,6 +761,24 @@ export default function App() {
                     ))}
                   </div>
                 )}
+
+                {/* Objetivos de Curto Prazo (Preenchimento do espaço em branco) */}
+                <div 
+                  className={`p-4 rounded-2xl transition-all ${campaign.shortTermBgColor || 'bg-[#FCFAF2]/80'} border border-natural-border/60 max-w-xl mt-3`}
+                  id="display-short-term-objectives"
+                >
+                  <div className="flex items-center gap-1.5 mb-1.5">
+                    <Sparkles className="w-4.5 h-4.5 text-[#F27D26]" />
+                    <h4 className="text-[11px] font-sans font-bold uppercase text-natural-primary tracking-wide">
+                      Objetivos de Curto Prazo
+                    </h4>
+                  </div>
+                  <p 
+                    className={`leading-relaxed whitespace-pre-line font-sans ${campaign.shortTermFontSize || 'text-xs'} ${campaign.shortTermTextColor || 'text-slate-800'} ${campaign.shortTermFontWeight || 'font-medium'} ${campaign.shortTermIsItalic ? 'italic' : ''}`}
+                  >
+                    {campaign.shortTermObjectives || "Defina seus objetivos de curto prazo no painel do organizador para preencher este espaço."}
+                  </p>
+                </div>
               </div>
 
               {/* Barra de Progresso Real e Estatísticas */}
@@ -650,19 +787,19 @@ export default function App() {
                   <div>
                     <span className="block text-[10px] text-slate-400 uppercase font-mono font-bold tracking-wider leading-none">Arrecadado (R$)</span>
                     <span className="text-lg sm:text-2xl font-serif font-bold italic text-natural-dark">
-                      {campaign.raisedAmount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      {dadosDaCampanha.valorArrecadadoFormatado}
                     </span>
                   </div>
                   <div>
                     <span className="block text-[10px] text-slate-400 uppercase font-mono font-bold tracking-wider leading-none">Apoiadores</span>
                     <span className="text-lg sm:text-2xl font-serif font-bold italic text-natural-dark">
-                      {campaign.donorCount} pessoas
+                      {dadosDaCampanha.apoiadores} pessoas
                     </span>
                   </div>
                   <div>
                     <span className="block text-[10px] text-slate-400 uppercase font-mono font-bold tracking-wider leading-none">Meta Global</span>
                     <span className="text-lg sm:text-2xl font-serif font-bold italic text-slate-400">
-                      R$ {campaign.targetAmount.toLocaleString('pt-BR')}
+                      R$ {dadosDaCampanha.metaGlobalFormatada}
                     </span>
                   </div>
                 </div>
@@ -672,12 +809,12 @@ export default function App() {
                   <div className="w-full h-3.5 bg-natural-border rounded-full overflow-hidden">
                     <div 
                       className="h-full bg-natural-primary rounded-full transition-all duration-1000"
-                      style={{ width: `${Math.min(100, (campaign.raisedAmount / campaign.targetAmount) * 100)}%` }}
+                      style={{ width: `${dadosDaCampanha.progressoPorcentagem}%` }}
                     />
                   </div>
                   <div className="flex justify-between text-[11px] font-semibold text-slate-400 mt-1.5 font-mono">
-                    <span>{Math.round((campaign.raisedAmount / campaign.targetAmount) * 100)}% Alcançados</span>
-                    <span>Falta arrecadar R$ {(campaign.targetAmount - campaign.raisedAmount).toLocaleString('pt-BR')}</span>
+                    <span>{Math.round(dadosDaCampanha.progressoPorcentagem)}% Alcançados</span>
+                    <span>Falta arrecadar R$ {dadosDaCampanha.valorRestanteFormatado}</span>
                   </div>
                 </div>
 
@@ -846,8 +983,39 @@ export default function App() {
                 onUpdateCampaign={handleUpdateCampaign} 
                 contributors={contributors}
                 onDeleteContributor={isAdmin ? (id: string) => {
+                  const target = contributors.find(c => c.id === id);
+                  if (target) {
+                    setCampaign(prev => ({
+                      ...prev,
+                      raisedAmount: Math.max(0, prev.raisedAmount - target.amount),
+                      donorCount: Math.max(0, prev.donorCount - 1),
+                    }));
+                  }
                   setContributors(prev => prev.filter(c => c.id !== id));
                   setLastDonationAlert("Apoio removido.");
+                  setTimeout(() => setLastDonationAlert(null), 3000);
+                } : undefined}
+                onAddContributor={isAdmin ? (newC: Contributor) => {
+                  setContributors(prev => [newC, ...prev]);
+                  setCampaign(prev => ({
+                    ...prev,
+                    raisedAmount: prev.raisedAmount + newC.amount,
+                    donorCount: prev.donorCount + 1,
+                  }));
+                  setLastDonationAlert(`Apoiador "${newC.name}" cadastrado com sucesso.`);
+                  setTimeout(() => setLastDonationAlert(null), 3000);
+                } : undefined}
+                onUpdateContributor={isAdmin ? (updatedC: Contributor) => {
+                  const oldC = contributors.find(c => c.id === updatedC.id);
+                  const diff = oldC ? (updatedC.amount - oldC.amount) : 0;
+                  if (diff !== 0) {
+                    setCampaign(prev => ({
+                      ...prev,
+                      raisedAmount: Math.max(0, prev.raisedAmount + diff),
+                    }));
+                  }
+                  setContributors(prev => prev.map(c => c.id === updatedC.id ? updatedC : c));
+                  setLastDonationAlert(`Dados do apoiador atualizados.`);
                   setTimeout(() => setLastDonationAlert(null), 3000);
                 } : undefined}
               />
@@ -898,13 +1066,31 @@ export default function App() {
               <p className="text-xs text-slate-350">Canal de Arrecadação de Inclusão, Musicoterapia e Multidisciplinas.</p>
             </div>
             
-            <button
-              onClick={handleResetStorage}
-              className="text-xs font-semibold px-4 h-8 bg-natural-primary hover:bg-natural-primary-dark rounded-lg text-white transition-colors cursor-pointer"
-              title="Restaura os valores originais da campanha e limpa o LocalStorage"
-            >
-              Restaurar Dados Originais
-            </button>
+            {!showResetConfirm ? (
+              <button
+                onClick={() => setShowResetConfirm(true)}
+                className="text-xs font-semibold px-4 h-8 bg-natural-primary hover:bg-natural-primary-dark rounded-lg text-white transition-colors cursor-pointer shrink-0"
+                title="Restaura os valores originais da campanha e limpa o LocalStorage"
+              >
+                Restaurar Dados Originais
+              </button>
+            ) : (
+              <div className="flex items-center gap-2 bg-neutral-900 border border-neutral-700/60 rounded-xl p-2.5 shadow-md">
+                <span className="text-[11px] text-amber-400 font-bold">Confirma o reset geral dos dados?</span>
+                <button
+                  onClick={handleResetStorage}
+                  className="text-[10px] font-extrabold px-3 py-1.5 bg-rose-600 hover:bg-rose-700 rounded-lg text-white transition-colors cursor-pointer"
+                >
+                  Sim, Resetar!
+                </button>
+                <button
+                  onClick={() => setShowResetConfirm(false)}
+                  className="text-[10px] font-extrabold px-3 py-1.5 bg-neutral-750 hover:bg-neutral-800 rounded-lg text-slate-300 transition-colors cursor-pointer border border-neutral-700"
+                >
+                  Cancelar
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="flex flex-col sm:flex-row justify-between text-[11px] text-slate-400 gap-2">

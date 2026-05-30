@@ -30,6 +30,7 @@ export default function TabTimeline({
 
   // Editing state
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [deletingUpdateId, setDeletingUpdateId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState('');
   const [editContent, setEditContent] = useState('');
   const [editCategory, setEditCategory] = useState<UpdateItem['category']>('Dia a Dia');
@@ -372,23 +373,42 @@ export default function TabTimeline({
 
                         {/* Ações de Edição se Admin */}
                         {isAdmin && (
-                          <div className="flex gap-1.5" id={`update-admin-pane-${item.id}`}>
-                            <button
-                              onClick={() => startEdit(item)}
-                              className="px-2 py-0.5 rounded text-[10px] font-bold bg-natural-light text-natural-primary hover:bg-natural-border flex items-center gap-0.5 transition-colors cursor-pointer"
-                            >
-                              <Edit2 className="w-2.5 h-2.5" /> Editar
-                            </button>
-                            <button
-                              onClick={() => {
-                                if (confirm('Excluir esta entrada do diário? Essa ação não pode ser desfeita.')) {
-                                  onDeleteUpdate(item.id);
-                                }
-                              }}
-                              className="px-2 py-0.5 rounded text-[10px] font-bold bg-red-50 text-red-700 hover:bg-red-100 flex items-center gap-0.5 transition-colors cursor-pointer"
-                            >
-                              Excluir
-                            </button>
+                          <div className="flex items-center gap-1.5" id={`update-admin-pane-${item.id}`}>
+                            {deletingUpdateId !== item.id ? (
+                              <>
+                                <button
+                                  onClick={() => startEdit(item)}
+                                  className="px-2 py-0.5 rounded text-[10px] font-bold bg-natural-light text-natural-primary hover:bg-natural-border flex items-center gap-0.5 transition-colors cursor-pointer border border-natural-border/40"
+                                >
+                                  <Edit2 className="w-2.5 h-2.5" /> Editar
+                                </button>
+                                <button
+                                  onClick={() => setDeletingUpdateId(item.id)}
+                                  className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-700 hover:bg-rose-100 flex items-center gap-0.5 transition-colors cursor-pointer border border-rose-100"
+                                >
+                                  Excluir
+                                </button>
+                              </>
+                            ) : (
+                              <div className="flex items-center gap-1 px-1.5 py-0.5 bg-rose-50 border border-rose-200 rounded-md shadow-xs">
+                                <span className="text-[9px] font-extrabold text-rose-700">Excluir?</span>
+                                <button
+                                  onClick={() => {
+                                    onDeleteUpdate(item.id);
+                                    setDeletingUpdateId(null);
+                                  }}
+                                  className="px-1.5 py-0.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-[9px] rounded cursor-pointer"
+                                >
+                                  Sim
+                                </button>
+                                <button
+                                  onClick={() => setDeletingUpdateId(null)}
+                                  className="px-1.5 py-0.5 bg-slate-500 hover:bg-slate-600 text-white font-extrabold text-[9px] rounded cursor-pointer"
+                                >
+                                  Não
+                                </button>
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>

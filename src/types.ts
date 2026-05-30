@@ -22,6 +22,12 @@ export interface Campaign {
   recurrentTitle?: string;
   recurrentDesc?: string;
   videos?: Array<{ id: string; url: string; caption?: string }>;
+  shortTermObjectives?: string;
+  shortTermFontSize?: string;
+  shortTermTextColor?: string;
+  shortTermFontWeight?: string;
+  shortTermIsItalic?: boolean;
+  shortTermBgColor?: string;
 }
 
 export interface TransparencyItem {

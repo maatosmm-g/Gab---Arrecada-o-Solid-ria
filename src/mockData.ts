@@ -53,6 +53,12 @@ export const initialCampaign: Campaign = {
   ],
   recurrentTitle: "Por que a Recorrência é Vital?",
   recurrentDesc: "A fonoaudiologia, o neuropediatra e a terapia ocupacional sensorial não são pontuais — são tratamentos cumulativos e permanentes. Garantir uma base de apoiadores mensais protege a rotina do Gabriel de interrupções.",
+  shortTermObjectives: "• Viabilizar mais 12 sessões mensais integradas de Terapia Ocupacional Sensorial.\n• Adquirir o novo jogo de óculos ergonômicos adaptativos com lentes anti-reflexo especiais.\n• Garantir a continuidade do suporte fonoaudiológico semanal focado na fluência da fala.",
+  shortTermFontSize: "text-xs",
+  shortTermTextColor: "text-slate-800",
+  shortTermFontWeight: "font-medium",
+  shortTermIsItalic: true,
+  shortTermBgColor: "bg-[#FCFAF2]/80",
   videos: [
     {
       id: "vid-1",
