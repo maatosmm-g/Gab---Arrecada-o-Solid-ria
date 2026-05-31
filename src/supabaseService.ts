@@ -6,7 +6,18 @@ import { obterDadosDaCampanha, CampaignDataSummary } from './campanhaConfig';
 const supabaseUrl = (import.meta as any).env?.VITE_SUPABASE_URL;
 const supabaseAnonKey = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY;
 
-export const supabase = supabaseUrl && supabaseAnonKey 
+// Função auxiliar para validar se a URL é um endereço HTTP/HTTPS válido
+function isValidHttpUrl(string: string) {
+  if (!string) return false;
+  try {
+    const url = new URL(string);
+    return url.protocol === "http:" || url.protocol === "https:";
+  } catch (_) {
+    return false;
+  }
+}
+
+export const supabase = isValidHttpUrl(supabaseUrl) && supabaseAnonKey
   ? createClient(supabaseUrl, supabaseAnonKey) 
   : null;
 

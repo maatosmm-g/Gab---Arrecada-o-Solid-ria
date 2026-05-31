@@ -72,12 +72,19 @@ export default function App() {
         const resumo = await buscarResumoDaCampanha();
         if (resumo) {
           setDadosBanco(resumo);
-          // Sincroniza informações numéricas da campanha local com o Supabase para consistência nos painéis de edição
+          
+          // Sincroniza informações numéricas e travas manuais com o Supabase
           setCampaign(prev => ({
             ...prev,
             targetAmount: resumo.metaGlobal,
             raisedAmount: resumo.valorArrecadado,
             donorCount: resumo.apoiadores,
+            
+            // 🔥 Novas linhas adicionadas para sincronizar os ajustes dos 3 cards:
+            overrideTotalSpent: resumo.gastoTotalReal,
+            useOverrideTotalSpent: resumo.usandoFiltroGastoManual,
+            overrideTotalForecast: resumo.projecaoTotalReal,
+            useOverrideTotalForecast: resumo.usandoFiltroProjecaoManual
           }));
         }
       } catch (err) {

@@ -19,6 +19,12 @@ export interface CampaignDataSummary {
   totalInvestidoTerapiasFormatado: string;
   totalCustosPlanejados: number;
   totalCustosPlanejadosFormatado: string;
+
+  // Propriedades de sincronização com o painel de ajuste
+  gastoTotalReal?: number;
+  usandoFiltroGastoManual?: boolean;
+  projecaoTotalReal?: number;
+  usandoFiltroProjecaoManual?: boolean;
 }
 
 /**
@@ -93,7 +99,11 @@ export function obterDadosDaCampanha(campaign: Campaign, transparencyItems?: Tra
     totalInvestidoTerapias,
     totalInvestidoTerapiasFormatado,
     totalCustosPlanejados,
-    totalCustosPlanejadosFormatado
+    totalCustosPlanejadosFormatado,
+    gastoTotalReal: campaign.overrideTotalSpent,
+    usandoFiltroGastoManual: campaign.useOverrideTotalSpent,
+    projecaoTotalReal: campaign.overrideTotalForecast,
+    usandoFiltroProjecaoManual: campaign.useOverrideTotalForecast
   };
 }
 
