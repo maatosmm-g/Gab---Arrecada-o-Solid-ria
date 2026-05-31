@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { initialCampaign, initialTransparency, initialUpdates, initialMedicalReports, defaultPINConfig, initialContributors } from './mockData';
 import { Campaign, TransparencyItem, UpdateItem, MedicalReport, PINConfig, Contributor } from './types';
 import PINPanel from './components/PINPanel';
-import { obterDadosDaCampanha } from './campanhaConfig';
+import { obterDadosDaCampanha, CampaignDataSummary } from './campanhaConfig';
+import { buscarResumoDaCampanha } from './supabaseService';
 import DonationModal from './components/DonationModal';
 import TabStory from './components/TabStory';
 import TabTransparency from './components/TabTransparency';
@@ -60,8 +61,36 @@ export default function App() {
 
   const [showResetConfirm, setShowResetConfirm] = useState(false);
 
-  // Centralização de dados e engrenagens de cálculo matemático da campanha
-  const dadosDaCampanha = obterDadosDaCampanha(campaign, transparency);
+  // Estados para dados integrados do Supabase
+  const [dadosBanco, setDadosBanco] = useState<CampaignDataSummary | null>(null);
+  const [carregando, setCarregando] = useState<boolean>(true);
+
+  // Efeito para carregar dados reais do Supabase na inicialização da página
+  useEffect(() => {
+    async function carregarDados() {
+      try {
+        const resumo = await buscarResumoDaCampanha();
+        if (resumo) {
+          setDadosBanco(resumo);
+          // Sincroniza informações numéricas da campanha local com o Supabase para consistência nos painéis de edição
+          setCampaign(prev => ({
+            ...prev,
+            targetAmount: resumo.metaGlobal,
+            raisedAmount: resumo.valorArrecadado,
+            donorCount: resumo.apoiadores,
+          }));
+        }
+      } catch (err) {
+        console.error("Erro ao carregar dados do Supabase:", err);
+      } finally {
+        setCarregando(false);
+      }
+    }
+    carregarDados();
+  }, []);
+
+  // Centralização de dados e engrenagens de cálculo matemático da campanha (com fallback integrado se dadosBanco for nulo)
+  const dadosDaCampanha = dadosBanco || obterDadosDaCampanha(campaign, transparency);
 
   // Helper para converter link cru do YouTube ou Vimeo em Embed URL
   const getEmbedUrl = (rawUrl: string): string => {
@@ -302,6 +331,19 @@ export default function App() {
     setTimeout(() => setLastDonationAlert(null), 3000);
     setShowResetConfirm(false);
   };
+
+  if (carregando) {
+    return (
+      <div className="min-h-screen bg-[#FCFAF2] flex flex-col items-center justify-center p-6" id="loading-screen">
+        <div className="flex flex-col items-center gap-4">
+          <RefreshCw className="w-8 h-8 text-[#F27D26] animate-spin" />
+          <p className="text-sm font-sans font-medium text-slate-600 animate-pulse">
+            Carregando dados da campanha...
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-natural-bg font-sans text-natural-dark antialiased" id="main-application-view">
