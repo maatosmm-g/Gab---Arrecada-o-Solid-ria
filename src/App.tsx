@@ -3,7 +3,7 @@ import { initialCampaign, initialTransparency, initialUpdates, initialMedicalRep
 import { Campaign, TransparencyItem, UpdateItem, MedicalReport, PINConfig, Contributor } from './types';
 import PINPanel from './components/PINPanel';
 import { obterDadosDaCampanha, CampaignDataSummary } from './campanhaConfig';
-import { buscarResumoDaCampanha } from './supabaseService';
+import { buscarResumoDaCampanha, getSupabaseDiagnostics, oUltimoErroDeConectar } from './supabaseService';
 import DonationModal from './components/DonationModal';
 import TabStory from './components/TabStory';
 import TabTransparency from './components/TabTransparency';
@@ -61,8 +61,10 @@ export default function App() {
 
   const [showResetConfirm, setShowResetConfirm] = useState(false);
 
-  // Estados para dados integrados do Supabase
+  // Estados para dados integrados do Supabase e diagnósticos de conexão
   const [dadosBanco, setDadosBanco] = useState<CampaignDataSummary | null>(null);
+  const [diagnosticoSupabase, setDiagnosticoSupabase] = useState(() => getSupabaseDiagnostics());
+  const [ultimoErroSupabase, setUltimoErroSupabase] = useState<string | null>(null);
   const [carregando, setCarregando] = useState<boolean>(true);
 
   // Efeito para carregar dados reais do Supabase na inicialização da página
@@ -90,6 +92,8 @@ export default function App() {
       } catch (err) {
         console.error("Erro ao carregar dados do Supabase:", err);
       } finally {
+        setUltimoErroSupabase(oUltimoErroDeConectar());
+        setDiagnosticoSupabase(getSupabaseDiagnostics());
         setCarregando(false);
       }
     }
