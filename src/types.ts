@@ -82,3 +82,17 @@ export interface Contributor {
   isRecurring: boolean;
   message?: string;
 }
+
+export interface ShopProduct {
+  id: string;
+  title: string;
+  description: string;
+  price: number;
+  image: string;
+  category: string;
+  optionsLabel?: string;
+  options?: string[];
+  paymentLink?: string;
+  isAvailable: boolean;
+}
+

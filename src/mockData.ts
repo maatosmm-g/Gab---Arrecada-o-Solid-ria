@@ -1,4 +1,4 @@
-import { Campaign, TransparencyItem, UpdateItem, MedicalReport, PINConfig, Contributor } from './types';
+import { Campaign, TransparencyItem, UpdateItem, MedicalReport, PINConfig, Contributor, ShopProduct } from './types';
 
 // Dados iniciais reais para a jornada do Gabriel Moraes Matos
 export const initialCampaign: Campaign = {
@@ -211,3 +211,95 @@ export const initialContributors: Contributor[] = [
   { id: "cont-4", name: "Luciana G. Rocha", amount: 50, date: "2026-05-27", isRecurring: false, message: "De grão em grão ajudamos." },
   { id: "cont-5", name: "Roberto Ramos (Samba do Amor)", amount: 300, date: "2026-05-26", isRecurring: true, message: "Toca forte esse repique, Gabriel!" }
 ];
+
+export const initialProducts: ShopProduct[] = [
+  {
+    id: "prod-1",
+    title: "Camiseta Oficial SuperAção Gabi",
+    description: "Camiseta personalizada de algodão egípcio macio com a arte exclusiva do super-herói Gabriel Moraes Matos. Confortável e durável, perfeita para vestir a causa solidária.",
+    price: 60,
+    image: "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&q=80&w=600",
+    category: "Camisas",
+    optionsLabel: "Tamanhos",
+    options: ["Infantil 4", "Infantil 6", "Infantil 8", "P", "M", "G", "GG"],
+    isAvailable: true
+  },
+  {
+    id: "prod-2",
+    title: "Caneca Hermética de Cerâmica",
+    description: "Caneca cerâmica de alta qualidade, ideal para café, chá ou cacau quente. Estampada com a ilustração vivaz do Gabriel de óculos azuis e carisma contagiante.",
+    price: 45,
+    image: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&q=80&w=600",
+    category: "Utensílios",
+    optionsLabel: "Fundo / Cor Interna",
+    options: ["Branco Neve", "Laranja Sol", "Azul Celeste"],
+    isAvailable: true
+  },
+  {
+    id: "prod-3",
+    title: "Garrafa / Squeeze de Alumínio",
+    description: "Squeeze esportiva de alumínio leve para hidratação ativa no dia a dia. Tampa de rosca segura de altíssima vedação com gancho chaveiro de transporte.",
+    price: 55,
+    image: "https://images.unsplash.com/photo-1602143407151-7111542de6e8?auto=format&fit=crop&q=80&w=600",
+    category: "Utensílios",
+    optionsLabel: "Acabamento",
+    options: ["Branco Brilhante", "Inox Escovado (Térmico)"],
+    isAvailable: true
+  },
+  {
+    id: "prod-4",
+    title: "Cuia Artesanal de Chimarrão",
+    description: "Tradicional cuia de madeira tratada com gravação a laser da marca oficial 'SuperAção Gabi'. Um toque de respeito e união com a cultura gaúcha para sua roda de mate.",
+    price: 75,
+    image: "https://images.unsplash.com/photo-1511920170033-f8396924c348?auto=format&fit=crop&q=80&w=600",
+    category: "Tradição",
+    optionsLabel: "Gravação",
+    options: ["Logo Herói Completo", "Amor em Tom de Samba"],
+    isAvailable: true
+  },
+  {
+    id: "prod-5",
+    title: "Boné Premium SuperAção Gabi",
+    description: "Boné de aba curva trucker ou clássico com fecho ajustável. Possui bordado frontal resistente de alta definição para espalhar essa corrente colorida onde você for.",
+    price: 40,
+    image: "https://images.unsplash.com/photo-1588850561407-ed78c282e89b?auto=format&fit=crop&q=80&w=600",
+    category: "Acessórios",
+    optionsLabel: "Estilo & Cor",
+    options: ["Preto Absoluto", "Branco/Azul Trucker", "Branco Clean"],
+    isAvailable: true
+  },
+  {
+    id: "prod-6",
+    title: "Sacochila Esportiva Ajustável",
+    description: "Sacochila de tecido sintético respirável super leve e à prova d'água. Ideal para carregar os pertences do parquinho com alça anatômica dupla de cordão.",
+    price: 30,
+    image: "https://images.unsplash.com/photo-1622560480605-d83c853bc5c3?auto=format&fit=crop&q=80&w=600",
+    category: "Acessórios",
+    optionsLabel: "Cor do Cordão",
+    options: ["Cordão Preto", "Cordão Azul Royal"],
+    isAvailable: true
+  },
+  {
+    id: "prod-7",
+    title: "Estojo Escolar Pencil Case",
+    description: "Estojo organizador compacto personalizado com zíper metálico de alta durabilidade. Perfeito para guardar lápis de cor e materiais escolares de estimulação motora fina.",
+    price: 25,
+    image: "https://images.unsplash.com/photo-1510070112810-d4e9a46d9e91?auto=format&fit=crop&q=80&w=600",
+    category: "Papelaria",
+    optionsLabel: "Zíper & Detalhe",
+    options: ["Branco Tradicional", "Azul Estrelado"],
+    isAvailable: true
+  },
+  {
+    id: "prod-8",
+    title: "Caderno Espiral / Notbook Gabi",
+    description: "Caderneta de anotações capa dura com espiral robusto, pautas macias e espaço para datas. Acompanha selo de doador ativo nas contracapas.",
+    price: 35,
+    image: "https://images.unsplash.com/photo-1531346878377-a5be20888e57?auto=format&fit=crop&q=80&w=600",
+    category: "Papelaria",
+    optionsLabel: "Tipo de Miolo",
+    options: ["Folhas Pautadas", "Folhas em Branco (Desenho)"],
+    isAvailable: true
+  }
+];
+

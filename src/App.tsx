@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { initialCampaign, initialTransparency, initialUpdates, initialMedicalReports, defaultPINConfig, initialContributors } from './mockData';
-import { Campaign, TransparencyItem, UpdateItem, MedicalReport, PINConfig, Contributor } from './types';
+import { initialCampaign, initialTransparency, initialUpdates, initialMedicalReports, defaultPINConfig, initialContributors, initialProducts } from './mockData';
+import { Campaign, TransparencyItem, UpdateItem, MedicalReport, PINConfig, Contributor, ShopProduct } from './types';
 import PINPanel from './components/PINPanel';
 import { obterDadosDaCampanha, CampaignDataSummary } from './campanhaConfig';
 import { buscarResumoDaCampanha, getSupabaseDiagnostics, oUltimoErroDeConectar } from './supabaseService';
@@ -9,12 +9,13 @@ import TabStory from './components/TabStory';
 import TabTransparency from './components/TabTransparency';
 import TabTimeline from './components/TabTimeline';
 import TabReports from './components/TabReports';
+import TabShop from './components/TabShop';
 import ImageUploadPicker from './components/ImageUploadPicker';
 import VideoUploadPicker from './components/VideoUploadPicker';
 import { 
   Heart, Shield, Sparkles, Award, Eye, Share2, MessageCircle, 
   CheckCircle2, FileText, Activity, AlertCircle, RefreshCw, Layers,
-  Phone, Edit2, Save, Plus, Trash2, Video, Film, Play
+  Phone, Edit2, Save, Plus, Trash2, Video, Film, Play, ShoppingBag
 } from 'lucide-react';
 
 export default function App() {
@@ -47,6 +48,11 @@ export default function App() {
   const [contributors, setContributors] = useState<Contributor[]>(() => {
     const saved = localStorage.getItem('solidary_contributors');
     return saved ? JSON.parse(saved) : initialContributors;
+  });
+
+  const [products, setProducts] = useState<ShopProduct[]>(() => {
+    const saved = localStorage.getItem('solidary_products');
+    return saved ? JSON.parse(saved) : initialProducts;
   });
 
   // Estado administrativo (Verificação via PIN)
@@ -195,7 +201,7 @@ export default function App() {
   const [lastDonationAlert, setLastDonationAlert] = useState<string | null>(null);
 
   // Aba selecionada
-  const [activeTab, setActiveTab] = useState<'sobre' | 'transparencia' | 'diario' | 'laudos'>('sobre');
+  const [activeTab, setActiveTab] = useState<'sobre' | 'transparencia' | 'diario' | 'laudos' | 'lojinha'>('sobre');
 
   // Efeitos para Gravação no LocalStorage sempre que houver modificações (Adição, Edição ou Exclusão)
   useEffect(() => {
@@ -221,6 +227,10 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('solidary_contributors', JSON.stringify(contributors));
   }, [contributors]);
+
+  useEffect(() => {
+    localStorage.setItem('solidary_products', JSON.stringify(products));
+  }, [products]);
 
   useEffect(() => {
     localStorage.setItem('solidary_simulation_mode', String(isSimulationMode));
@@ -294,6 +304,24 @@ export default function App() {
     setTimeout(() => setLastDonationAlert(null), 3000);
   };
 
+  const handleAddProduct = (item: ShopProduct) => {
+    setProducts([item, ...products]);
+    setLastDonationAlert("Novo item adicionado à lojinha da campanha!");
+    setTimeout(() => setLastDonationAlert(null), 3000);
+  };
+
+  const handleUpdateProduct = (item: ShopProduct) => {
+    setProducts(products.map((it) => (it.id === item.id ? item : it)));
+    setLastDonationAlert("Item da lojinha editado e atualizado!");
+    setTimeout(() => setLastDonationAlert(null), 3000);
+  };
+
+  const handleDeleteProduct = (id: string) => {
+    setProducts(products.filter((it) => it.id !== id));
+    setLastDonationAlert("Item removido da lojinha.");
+    setTimeout(() => setLastDonationAlert(null), 3000);
+  };
+
   // Processamento de transação vindo do Checkout
   const handleSuccessPay = (amount: number, isRecurring: boolean, name?: string, message?: string) => {
     // Altera o montante arrecadado e o número de doadores na campanha
@@ -327,6 +355,7 @@ export default function App() {
     localStorage.removeItem('solidary_reports');
     localStorage.removeItem('solidary_pin');
     localStorage.removeItem('solidary_contributors');
+    localStorage.removeItem('solidary_products');
     localStorage.removeItem('solidary_simulation_mode');
     
     setCampaign(initialCampaign);
@@ -335,6 +364,7 @@ export default function App() {
     setReports(initialMedicalReports);
     setPinConfig(defaultPINConfig);
     setContributors(initialContributors);
+    setProducts(initialProducts);
     setIsSimulationMode(true);
     setIsAdmin(false);
 
@@ -1024,6 +1054,18 @@ export default function App() {
                 4. Relatórios Médicos ({reports.length})
               </button>
 
+              <button
+                onClick={() => setActiveTab('lojinha')}
+                className={`py-3 px-1 border-b-2 font-display font-bold text-xs sm:text-sm whitespace-nowrap transition-colors flex items-center gap-2 focus:outline-none cursor-pointer ${
+                  activeTab === 'lojinha'
+                    ? 'border-natural-primary text-natural-primary'
+                    : 'border-transparent text-slate-500 hover:text-natural-primary'
+                }`}
+              >
+                <ShoppingBag className="w-4 h-4 text-natural-primary" />
+                5. Produtos Solidários ({products.length})
+              </button>
+
             </div>
           </div>
 
@@ -1103,6 +1145,17 @@ export default function App() {
                 onAddReport={handleAddReport} 
                 onUpdateReport={handleUpdateReport} 
                 onDeleteReport={handleDeleteReport} 
+              />
+            )}
+
+            {activeTab === 'lojinha' && (
+              <TabShop
+                products={products}
+                isAdmin={isAdmin}
+                onAddProduct={handleAddProduct}
+                onUpdateProduct={handleUpdateProduct}
+                onDeleteProduct={handleDeleteProduct}
+                whatsappContact={campaign.whatsappNumber}
               />
             )}
           </div>
